@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EIIP Demo - Elite India Image Processing</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .demo-section {
+            padding: 30px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .demo-section:last-child {
+            border-bottom: none;
+        }
+
+        .demo-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            cursor: pointer;
+            background: #667eea;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .file-input-wrapper:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        button {
+            background: #764ba2;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        button:hover:not(:disabled) {
+            background: #6a4190;
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-area {
+            min-height: 200px;
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            background: #f9f9f9;
+        }
+
+        .result-area.has-content {
+            border-style: solid;
+            border-color: #667eea;
+            background: white;
+        }
+
+        .result-area img {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .processing {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ddd;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .info-panel {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .download-btn {
+            background: #28a745;
+            margin-top: 15px;
+        }
+
+        .download-btn:hover {
+            background: #218838;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #eee;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            border-bottom-color: #667eea;
+            background: #f8f9fa;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 EIIP Demo</h1>
+            <p>Elite India Image Processing - Complete Frontend Image Processing Library</p>
+        </div>
+
+        <!-- SVG to Raster Section -->
+        <div class="demo-section">
+            <h2>📐 SVG to Raster Converter</h2>
+            <div class="controls">
+                <label class="file-input-wrapper">
+                    <input type="file" id="svgFile" accept=".svg">
+                    Choose SVG File
+                </label>
+                <button onclick="convertSvgToRaster()">Convert to PNG</button>
+                <button onclick="convertSvgWithOptions()">Convert with Knitting Effects</button>
+                <button onclick="convertWithYarnEffects()">Convert with Yarn Texture</button>
+            </div>
+            <div id="svgResult" class="result-area">
+                <p>Select an SVG file to convert to raster format (PNG, JPG, WebP)</p>
+            </div>
+        </div>
+
+        <!-- Raster to SVG Section -->
+        <div class="demo-section">
+            <h2>🖼️ Raster to SVG Converter</h2>
+            <div class="controls">
+                <label class="file-input-wrapper">
+                    <input type="file" id="rasterFile" accept=".png,.jpg,.jpeg,.gif,.bmp,.webp">
+                    Choose Image File
+                </label>
+                <button onclick="convertRasterToSvg()">Convert to SVG</button>
+                <button onclick="convertWithColorReduction()">Convert with Color Reduction</button>
+            </div>
+            <div id="rasterResult" class="result-area">
+                <p>Select a raster image to convert to SVG format</p>
+            </div>
+        </div>
+
+        <!-- Image Layer Merger Section -->
+        <div class="demo-section">
+            <h2>🔧 Image Layer Merger</h2>
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('basic')">Basic Merging</div>
+                <div class="tab" onclick="switchTab('advanced')">Advanced Effects</div>
+            </div>
+            
+            <div id="basic-tab" class="tab-content active">
+                <div class="controls">
+                    <label class="file-input-wrapper">
+                        <input type="file" id="backgroundFile" accept="image/*">
+                        Background Image
+                    </label>
+                    <label class="file-input-wrapper">
+                        <input type="file" id="overlayFile" accept="image/*">
+                        Overlay Image
+                    </label>
+                    <button onclick="mergeBasicLayers()">Merge Layers</button>
+                </div>
+            </div>
+
+            <div id="advanced-tab" class="tab-content">
+                <div class="controls">
+                    <button onclick="createDemoComposition()">Create Demo Composition</button>
+                    <button onclick="createPrintQuality()">Create Print Quality (300 DPI)</button>
+                    <button onclick="batchProcess()">Batch Process Demo</button>
+                </div>
+            </div>
+
+            <div id="layerResult" class="result-area">
+                <p>Upload images to merge them into a single composition</p>
+            </div>
+        </div>
+
+        <!-- All-in-One Demo Section -->
+        <div class="demo-section">
+            <h2>🚀 All-in-One Processing Demo</h2>
+            <div class="controls">
+                <button onclick="comprehensiveDemo()">Run Comprehensive Demo</button>
+                <button onclick="frameworkDemo()">Framework Integration Example</button>
+            </div>
+            <div id="comprehensiveResult" class="result-area">
+                <p>Demonstrates all EIIP capabilities in a single workflow</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include EIIP Library -->
+    <script src="eiip.min.js"></script>
+
+    <script>
+        // Initialize EIIP with debug enabled
+        const eiip = new EIIP({ debug: true });
+
+        // Tab switching functionality
+        function switchTab(tabName) {
+            // Remove active class from all tabs and contents
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Add active class to selected tab and content
+            event.target.classList.add('active');
+            document.getElementById(tabName + '-tab').classList.add('active');
+        }
+
+        // Utility function to show processing state
+        function showProcessing(elementId, message = 'Processing...') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `
+                <div class="processing">
+                    <div class="spinner"></div>
+                    ${message}
+                </div>
+            `;
+            element.classList.remove('has-content');
+        }
+
+        // Utility function to show result
+        function showResult(elementId, content, info = '') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = content + (info ? `<div class="info-panel">${info}</div>` : '');
+            element.classList.add('has-content');
+        }
+
+        // Utility function to show error
+        function showError(elementId, error) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<p style="color: #dc3545;">❌ Error: ${error.message}</p>`;
+            element.classList.remove('has-content');
+        }
+
+        // SVG to Raster Conversion Functions
+        async function convertSvgToRaster() {
+            const fileInput = document.getElementById('svgFile');
+            if (!fileInput.files[0]) {
+                alert('Please select an SVG file first!');
+                return;
+            }
+
+            showProcessing('svgResult', 'Converting SVG to PNG...');
+
+            try {
+                const result = await eiip.convertSvgToRaster(fileInput.files[0], {
+                    width: 800,
+                    height: 600,
+                    format: 'png',
+                    quality: 0.9,
+                    backgroundColor: 'transparent'
+                });
+
+                const downloadBtn = `<button class="download-btn" onclick="eiip.downloadImage('${result.dataUrl}', 'converted-svg.png')">Download PNG</button>`;
+                
+                showResult('svgResult', `
+                    <img src="${result.dataUrl}" alt="Converted SVG">
+                    ${downloadBtn}
+                `, `Converted to ${result.width}x${result.height} PNG • Format: ${result.format.toUpperCase()}`);
+
+            } catch (error) {
+                showError('svgResult', error);
+            }
+        }
+
+        async function convertSvgWithOptions() {
+            const fileInput = document.getElementById('svgFile');
+            if (!fileInput.files[0]) {
+                alert('Please select an SVG file first!');
+                return;
+            }
+
+            showProcessing('svgResult', 'Converting with knitting effects...');
+
+            try {
+                // First convert SVG to raster
+                const svgToRaster = new EIIP.SvgToRaster({
+                    width: 800,
+                    height: 600,
+                    format: 'png',
+                    quality: 0.9
+                });
+
+                const convertResult = await svgToRaster.convertFromFile(fileInput.files[0]);
+                
+                // Then apply knitting effects
+                const knittingResult = await svgToRaster.applyKnittingEffect(convertResult.dataUrl, {
+                    patternType: 'cable',
+                    intensity: 0.7,
+                    stitchSize: 12,
+                    addTexture: true
+                });
+
+                const downloadBtn = `<button class="download-btn" onclick="eiip.downloadImage('${knittingResult.dataUrl}', 'knitting-effect.png')">Download with Knitting Effect</button>`;
+                
+                showResult('svgResult', `
+                    <img src="${knittingResult.dataUrl}" alt="SVG with Knitting Effect">
+                    ${downloadBtn}
+                `, `SVG with Cable Knitting Effect • ${knittingResult.width}x${knittingResult.height} PNG • Pattern: ${knittingResult.effectOptions.patternType} • Intensity: ${knittingResult.effectOptions.intensity}`);
+
+            } catch (error) {
+                showError('svgResult', error);
+            }
+        }
+
+        async function convertWithYarnEffects() {
+            const fileInput = document.getElementById('svgFile');
+            if (!fileInput.files[0]) {
+                alert('Please select an SVG file first!');
+                return;
+            }
+
+            showProcessing('svgResult', 'Converting with yarn texture effects...');
+
+            try {
+                // First convert SVG to raster
+                const svgToRaster = new EIIP.SvgToRaster({
+                    width: 800,
+                    height: 600,
+                    format: 'png',
+                    quality: 0.95
+                });
+
+                const convertResult = await svgToRaster.convertFromFile(fileInput.files[0]);
+                
+                // Then apply yarn knitting effects
+                const yarnResult = await svgToRaster.applyYarnKnittingEffect(convertResult.dataUrl, {
+                    yarnType: 'wool',
+                    twist: 'high',
+                    colors: ['#8B4513', '#A0522D', '#CD853F'],
+                    density: 0.8
+                });
+
+                const downloadBtn = `<button class="download-btn" onclick="eiip.downloadImage('${yarnResult.dataUrl}', 'yarn-texture.png')">Download with Yarn Texture</button>`;
+                
+                showResult('svgResult', `
+                    <img src="${yarnResult.dataUrl}" alt="SVG with Yarn Texture">
+                    ${downloadBtn}
+                `, `SVG with Wool Yarn Texture • ${yarnResult.width}x${yarnResult.height} PNG • Yarn: ${yarnResult.yarnOptions.yarnType} • Twist: ${yarnResult.yarnOptions.twist} • Density: ${yarnResult.yarnOptions.density}`);
+
+            } catch (error) {
+                showError('svgResult', error);
+            }
+        }
+
+        // Raster to SVG Conversion Functions
+        async function convertRasterToSvg() {
+            const fileInput = document.getElementById('rasterFile');
+            if (!fileInput.files[0]) {
+                alert('Please select an image file first!');
+                return;
+            }
+
+            showProcessing('rasterResult', 'Converting image to SVG...');
+
+            try {
+                const result = await eiip.convertRasterToSvg(fileInput.files[0], {
+                    scaleFactor: 0.5,
+                    colorReductionLevel: EIIP.RasterToSvg.COLOR_PRESETS.MEDIUM
+                });
+
+                // Create a blob URL for the SVG
+                const svgBlob = new Blob([result.svg], { type: 'image/svg+xml' });
+                const svgUrl = URL.createObjectURL(svgBlob);
+
+                const downloadBtn = `<button class="download-btn" onclick="downloadSvg('${result.svg.replace(/'/g, "\\'")}', 'converted-image.svg')">Download SVG</button>`;
+                
+                showResult('rasterResult', `
+                    <img src="${svgUrl}" alt="Converted to SVG">
+                    ${downloadBtn}
+                `, `Converted to SVG • Colors: ${result.colorCount} • Original: ${result.originalWidth}x${result.originalHeight} → SVG: ${result.width}x${result.height}`);
+
+            } catch (error) {
+                showError('rasterResult', error);
+            }
+        }
+
+        async function convertWithColorReduction() {
+            const fileInput = document.getElementById('rasterFile');
+            if (!fileInput.files[0]) {
+                alert('Please select an image file first!');
+                return;
+            }
+
+            showProcessing('rasterResult', 'Converting with color reduction...');
+
+            try {
+                const result = await eiip.convertRasterToSvg(fileInput.files[0], {
+                    scaleFactor: 1.0,
+                    exactColorCount: 8 // Exactly 8 colors
+                });
+
+                const svgBlob = new Blob([result.svg], { type: 'image/svg+xml' });
+                const svgUrl = URL.createObjectURL(svgBlob);
+
+                const downloadBtn = `<button class="download-btn" onclick="downloadSvg('${result.svg.replace(/'/g, "\\'")}', 'converted-8-colors.svg')">Download SVG</button>`;
+                
+                showResult('rasterResult', `
+                    <img src="${svgUrl}" alt="8-Color SVG">
+                    ${downloadBtn}
+                `, `8-Color SVG conversion • Final colors: ${result.colorCount} • Size: ${result.width}x${result.height}`);
+
+            } catch (error) {
+                showError('rasterResult', error);
+            }
+        }
+
+        // Helper function to download SVG
+        function downloadSvg(svgContent, filename) {
+            const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = url;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            URL.revokeObjectURL(url);
+        }
+
+        // Layer Merging Functions
+        async function mergeBasicLayers() {
+            const backgroundFile = document.getElementById('backgroundFile').files[0];
+            const overlayFile = document.getElementById('overlayFile').files[0];
+
+            if (!backgroundFile || !overlayFile) {
+                alert('Please select both background and overlay images!');
+                return;
+            }
+
+            showProcessing('layerResult', 'Merging image layers...');
+
+            try {
+                const result = await eiip.mergeLayers([
+                    {
+                        src: backgroundFile,
+                        x: 0,
+                        y: 0,
+                        zIndex: 1
+                    },
+                    {
+                        src: overlayFile,
+                        x: 'center',
+                        y: 'center',
+                        scale: 0.6,
+                        opacity: 0.8,
+                        zIndex: 2
+                    }
+                ], {
+                    width: 800,
+                    height: 600,
+                    backgroundColor: '#ffffff',
+                    format: 'png',
+                    quality: 0.95
+                });
+
+                const downloadBtn = `<button class="download-btn" onclick="eiip.downloadImage('${result.dataUrl}', 'merged-layers.png')">Download Merged Image</button>`;
+                
+                showResult('layerResult', `
+                    <img src="${result.dataUrl}" alt="Merged Layers">
+                    ${downloadBtn}
+                `, `Merged 2 layers • Output: ${result.width}x${result.height} PNG`);
+
+            } catch (error) {
+                showError('layerResult', error);
+            }
+        }
+
+        async function createDemoComposition() {
+            showProcessing('layerResult', 'Creating demo composition...');
+
+            try {
+                // Create a simple demo using data URLs (colored rectangles)
+                const canvas1 = document.createElement('canvas');
+                canvas1.width = 400;
+                canvas1.height = 300;
+                const ctx1 = canvas1.getContext('2d');
+                ctx1.fillStyle = '#667eea';
+                ctx1.fillRect(0, 0, 400, 300);
+                ctx1.fillStyle = 'white';
+                ctx1.font = '24px Arial';
+                ctx1.textAlign = 'center';
+                ctx1.fillText('Background Layer', 200, 150);
+
+                const canvas2 = document.createElement('canvas');
+                canvas2.width = 200;
+                canvas2.height = 200;
+                const ctx2 = canvas2.getContext('2d');
+                ctx2.fillStyle = '#764ba2';
+                ctx2.fillRect(0, 0, 200, 200);
+                ctx2.fillStyle = 'white';
+                ctx2.font = '16px Arial';
+                ctx2.textAlign = 'center';
+                ctx2.fillText('Overlay', 100, 100);
+
+                const result = await eiip.mergeLayers([
+                    {
+                        src: canvas1.toDataURL(),
+                        x: 0,
+                        y: 0,
+                        zIndex: 1
+                    },
+                    {
+                        src: canvas2.toDataURL(),
+                        x: 'center',
+                        y: 'center',
+                        rotation: 15,
+                        opacity: 0.9,
+                        zIndex: 2
+                    }
+                ], {
+                    width: 600,
+                    height: 400,
+                    backgroundColor: '#f0f0f0',
+                    format: 'png'
+                });
+
+                const downloadBtn = `<button class="download-btn" onclick="eiip.downloadImage('${result.dataUrl}', 'demo-composition.png')">Download Demo</button>`;
+                
+                showResult('layerResult', `
+                    <img src="${result.dataUrl}" alt="Demo Composition">
+                    ${downloadBtn}
+                `, `Demo composition with rotation and opacity effects • 600x400 PNG`);
+
+            } catch (error) {
+                showError('layerResult', error);
+            }
+        }
+
+        async function createPrintQuality() {
+            showProcessing('layerResult', 'Creating print-quality output...');
+
+            try {
+                // Calculate dimensions for 300 DPI print at 4x6 inches
+                const printDimensions = EIIP.ImageLayerMerger.getPixelDimensions(4, 6, 300);
+                
+                const canvas = document.createElement('canvas');
+                canvas.width = printDimensions.width;
+                canvas.height = printDimensions.height;
+                const ctx = canvas.getContext('2d');
+                
+                // Create gradient background
+                const gradient = ctx.createLinearGradient(0, 0, printDimensions.width, printDimensions.height);
+                gradient.addColorStop(0, '#667eea');
+                gradient.addColorStop(1, '#764ba2');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, printDimensions.width, printDimensions.height);
+                
+                ctx.fillStyle = 'white';
+                ctx.font = '48px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Print Quality Demo', printDimensions.width / 2, printDimensions.height / 2);
+                ctx.font = '24px Arial';
+                ctx.fillText(`${printDimensions.width}x${printDimensions.height} @ 300 DPI`, printDimensions.width / 2, printDimensions.height / 2 + 60);
+
+                const result = await eiip.mergeLayers([
+                    {
+                        src: canvas.toDataURL(),
+                        x: 0,
+                        y: 0,
+                        zIndex: 1
+                    }
+                ], {
+                    width: printDimensions.width,
+                    height: printDimensions.height,
+                    format: 'png',
+                    quality: 1.0
+                });
+
+                const downloadBtn = `<button class="download-btn" onclick="eiip.downloadImage('${result.dataUrl}', 'print-quality-4x6-300dpi.png')">Download Print Quality</button>`;
+                
+                showResult('layerResult', `
+                    <img src="${result.dataUrl}" alt="Print Quality" style="max-height: 300px;">
+                    ${downloadBtn}
+                `, `Print-quality output • ${printDimensions.width}x${printDimensions.height} pixels (4"x6" @ 300 DPI) • PNG format`);
+
+            } catch (error) {
+                showError('layerResult', error);
+            }
+        }
+
+        async function batchProcess() {
+            showProcessing('layerResult', 'Running batch processing demo...');
+
+            try {
+                const results = [];
+                const formats = ['png', 'jpg', 'webp'];
+                
+                // Create a simple test image
+                const canvas = document.createElement('canvas');
+                canvas.width = 300;
+                canvas.height = 200;
+                const ctx = canvas.getContext('2d');
+                
+                const gradient = ctx.createRadialGradient(150, 100, 0, 150, 100, 150);
+                gradient.addColorStop(0, '#667eea');
+                gradient.addColorStop(1, '#764ba2');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, 300, 200);
+                
+                ctx.fillStyle = 'white';
+                ctx.font = '20px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Batch Processing', 150, 100);
+
+                for (let i = 0; i < formats.length; i++) {
+                    const format = formats[i];
+                    const result = await eiip.mergeLayers([
+                        {
+                            src: canvas.toDataURL(),
+                            x: 0,
+                            y: 0,
+                            scale: 1,
+                            zIndex: 1
+                        }
+                    ], {
+                        width: 400,
+                        height: 300,
+                        format: format,
+                        quality: 0.9,
+                        backgroundColor: format === 'jpg' ? '#ffffff' : 'transparent'
+                    });
+                    
+                    results.push({ format, dataUrl: result.dataUrl });
+                }
+
+                const imagesHtml = results.map((result, index) => `
+                    <div style="display: inline-block; margin: 10px; text-align: center;">
+                        <img src="${result.dataUrl}" alt="${result.format.toUpperCase()}" style="max-width: 150px; border: 1px solid #ddd; border-radius: 4px;">
+                        <br>
+                        <button class="download-btn" style="margin-top: 5px; font-size: 12px;" onclick="eiip.downloadImage('${result.dataUrl}', 'batch-${result.format}.${result.format}')">
+                            ${result.format.toUpperCase()}
+                        </button>
+                    </div>
+                `).join('');
+
+                showResult('layerResult', imagesHtml, `Batch processed into 3 formats: PNG, JPG, WebP • Same source, different outputs`);
+
+            } catch (error) {
+                showError('layerResult', error);
+            }
+        }
+
+        // Comprehensive Demo Functions
+        async function comprehensiveDemo() {
+            showProcessing('comprehensiveResult', 'Running comprehensive EIIP demo with knitting effects...');
+
+            try {
+                // Step 1: Create an SVG
+                const svgContent = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+                        <circle cx="100" cy="100" r="80" fill="#667eea" stroke="#764ba2" stroke-width="4"/>
+                        <text x="100" y="110" text-anchor="middle" fill="white" font-family="Arial" font-size="24">EIIP</text>
+                    </svg>
+                `;
+
+                // Step 2: Convert SVG to raster with knitting effects
+                const svgToRaster = new EIIP.SvgToRaster({
+                    width: 200,
+                    height: 200,
+                    format: 'png'
+                });
+
+                const rasterResult = await svgToRaster.convertFromSvgString(svgContent);
+                
+                // Step 3: Apply knitting effects
+                const knittingResult = await svgToRaster.applyKnittingEffect(rasterResult.dataUrl, {
+                    patternType: 'basic',
+                    intensity: 0.6,
+                    stitchSize: 8
+                });
+
+                // Step 4: Convert back to SVG with color reduction
+                const svgResult = await eiip.convertRasterToSvg(knittingResult.dataUrl, {
+                    scaleFactor: 1.0,
+                    colorReductionLevel: EIIP.RasterToSvg.COLOR_PRESETS.EIGHT_COLORS
+                });
+
+                // Step 5: Create a background with yarn texture
+                const bgCanvas = document.createElement('canvas');
+                bgCanvas.width = 500;
+                bgCanvas.height = 300;
+                const bgCtx = bgCanvas.getContext('2d');
+                const bgGradient = bgCtx.createLinearGradient(0, 0, 500, 300);
+                bgGradient.addColorStop(0, '#f8f9fa');
+                bgGradient.addColorStop(1, '#e9ecef');
+                bgCtx.fillStyle = bgGradient;
+                bgCtx.fillRect(0, 0, 500, 300);
+
+                // Step 6: Merge everything together
+                const svgBlob = new Blob([svgResult.svg], { type: 'image/svg+xml' });
+                const svgUrl = URL.createObjectURL(svgBlob);
+
+                const finalResult = await eiip.mergeLayers([
+                    {
+                        src: bgCanvas.toDataURL(),
+                        x: 0,
+                        y: 0,
+                        zIndex: 1
+                    },
+                    {
+                        src: knittingResult.dataUrl,
+                        x: 50,
+                        y: 50,
+                        zIndex: 2
+                    },
+                    {
+                        src: svgUrl,
+                        x: 300,
+                        y: 50,
+                        zIndex: 3
+                    }
+                ], {
+                    width: 550,
+                    height: 300,
+                    format: 'png',
+                    quality: 0.95
+                });
+
+                const downloadBtn = `<button class="download-btn" onclick="eiip.downloadImage('${finalResult.dataUrl}', 'comprehensive-knitting-demo.png')">Download Result</button>`;
+                
+                showResult('comprehensiveResult', `
+                    <img src="${finalResult.dataUrl}" alt="Comprehensive Demo with Knitting Effects">
+                    ${downloadBtn}
+                `, `Complete workflow with knitting effects: SVG → Raster → Knitting Pattern → SVG (${svgResult.colorCount} colors) → Final composition • 550x300 PNG • Pattern: ${knittingResult.effectOptions.patternType}`);
+
+            } catch (error) {
+                showError('comprehensiveResult', error);
+            }
+        }
+
+        async function frameworkDemo() {
+            showProcessing('comprehensiveResult', 'Demonstrating framework integration patterns...');
+
+            try {
+                // Simulate React-style component state management
+                const ComponentState = {
+                    processing: false,
+                    result: null,
+                    error: null
+                };
+
+                // Simulate Vue-style reactive data
+                const VueData = {
+                    selectedFile: null,
+                    outputFormat: 'png',
+                    quality: 0.9
+                };
+
+                // Simulate Angular-style service method
+                class ImageProcessingService {
+                    constructor() {
+                        this.eiip = new EIIP({ debug: false });
+                    }
+
+                    async processImage(options) {
+                        return await this.eiip.convertSvgToRaster(
+                            '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#667eea"/></svg>',
+                            options
+                        );
+                    }
+                }
+
+                // Demo all patterns
+                const service = new ImageProcessingService();
+                const result = await service.processImage({
+                    width: 200,
+                    height: 200,
+                    format: VueData.outputFormat,
+                    quality: VueData.quality
+                });
+
+                ComponentState.result = result;
+                ComponentState.processing = false;
+
+                const frameworksInfo = `
+                    <div style="text-align: left; margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                        <h4 style="margin-bottom: 10px; color: #667eea;">Framework Integration Examples:</h4>
+                        <p><strong>React:</strong> State management with hooks (useState, useEffect)</p>
+                        <p><strong>Vue.js:</strong> Reactive data and computed properties</p> 
+                        <p><strong>Angular:</strong> Services and dependency injection</p>
+                        <p><strong>Vanilla JS:</strong> Direct API calls and DOM manipulation</p>
+                    </div>
+                `;
+
+                const downloadBtn = `<button class="download-btn" onclick="eiip.downloadImage('${result.dataUrl}', 'framework-demo.png')">Download Framework Demo</button>`;
+                
+                showResult('comprehensiveResult', `
+                    <img src="${result.dataUrl}" alt="Framework Integration Demo">
+                    ${frameworksInfo}
+                    ${downloadBtn}
+                `, `Demonstrates EIIP integration patterns for modern JavaScript frameworks`);
+
+            } catch (error) {
+                showError('comprehensiveResult', error);
+            }
+        }
+
+        // Initialize demo on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎨 EIIP Demo loaded successfully!');
+            console.log('📚 Library version:', EIIP.version);
+            console.log('👨‍💻 Author:', EIIP.author);
+        });
+    </script>
+</body>
+</html>

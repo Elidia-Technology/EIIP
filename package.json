@@ -1,0 +1,60 @@
+{
+  "name": "eiip",
+  "version": "1.0.0",
+  "description": "EIIP (Elite India Image Processing) - Complete frontend image processing library with SVG to raster conversion, raster to SVG conversion, and advanced image layer merging capabilities. Compatible with React, Angular, Vue.js, and vanilla JavaScript.",
+  "main": "eiip.js",
+  "browser": "eiip.min.js",
+  "unpkg": "eiip.min.js",
+  "jsdelivr": "eiip.min.js",
+  "scripts": {
+    "build": "npx terser eiip.js -c -m --source-map -o eiip.min.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "image-processing",
+    "svg-to-raster",
+    "raster-to-svg",
+    "image-layer-merger",
+    "svg",
+    "raster",
+    "png",
+    "jpg",
+    "webp",
+    "canvas",
+    "image-conversion",
+    "knitting-effects",
+    "frontend",
+    "javascript",
+    "browser",
+    "nodejs",
+    "react",
+    "angular",
+    "vue",
+    "elite-india",
+    "eiip"
+  ],
+  "author": "Saleem Ahmad (Elite India)",
+  "license": "MIT",
+  "homepage": "https://github.com/SaleemLww/EIIP-Frontend#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SaleemLww/EIIP-Frontend.git"
+  },
+  "bugs": {
+    "url": "https://github.com/SaleemLww/EIIP-Frontend/issues"
+  },
+  "files": [
+    "eiip.js",
+    "eiip.min.js",
+    "eiip.min.js.map",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "devDependencies": {
+    "terser": "^5.44.0"
+  }
+}
