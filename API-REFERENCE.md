@@ -2,7 +2,7 @@
 
 Complete API documentation for EIIP (Elite India Image Processing) library.
 
-**Version:** 1.0.1  
+**Version:** 1.2.0  
 **Author:** Saleem Ahmad (Elite India)  
 **License:** MIT
 
@@ -28,6 +28,22 @@ Complete API documentation for EIIP (Elite India Image Processing) library.
   - [ImageLayerMerger Class](#imagelayermerger-class)
   - [Layer Options](#layer-options)
   - [Merge Options](#merge-options)
+- [Image Cropping](#image-cropping)
+  - [ImageCropper Class](#imagecropper-class)
+- [Image Effects & Filters](#image-effects--filters)
+  - [ImageEffects Class](#imageeffects-class)
+- [PDF Conversion](#pdf-conversion)
+  - [PDFConverter Class](#pdfconverter-class)
+- [Image Resize & Scale (v1.2.0)](#image-resize--scale-v120)
+  - [ImageResizer Class](#imageresizer-class)
+- [Image Rotation & Flip (v1.2.0)](#image-rotation--flip-v120)
+  - [ImageRotator Class](#imagerotator-class)
+- [Image Compression (v1.2.0)](#image-compression-v120)
+  - [ImageCompressor Class](#imagecompressor-class)
+- [Text Overlay & Watermark (v1.2.0)](#text-overlay--watermark-v120)
+  - [TextOverlay Class](#textoverlay-class)
+- [Color Adjustment (v1.2.0)](#color-adjustment-v120)
+  - [ColorAdjuster Class](#coloradjuster-class)
 - [Utility Methods](#utility-methods)
 - [Error Handling](#error-handling)
 - [Browser Compatibility](#browser-compatibility)
@@ -273,6 +289,138 @@ eiip.downloadImage(result.dataUrl, 'converted-image.png');
 
 ---
 
+#### Image Resize Methods (v1.2.0)
+
+##### `resizeImage(input, options)`
+
+Resize image to specific dimensions.
+
+**Example:**
+```javascript
+const result = await eiip.resizeImage(file, {
+    width: 800,
+    height: 600,
+    fit: 'contain',
+    format: 'png',
+    quality: 0.92
+});
+```
+
+##### `scaleImage(input, scaleFactor, options)`
+
+Scale image by percentage.
+
+**Example:**
+```javascript
+const result = await eiip.scaleImage(file, 0.5); // 50% size
+```
+
+##### `createThumbnail(input, options)`
+
+Create thumbnail automatically.
+
+**Example:**
+```javascript
+const thumb = await eiip.createThumbnail(file, { size: 150 });
+```
+
+---
+
+#### Image Rotation Methods (v1.2.0)
+
+##### `rotateImage(input, degrees, options)`
+
+Rotate image by angle.
+
+**Example:**
+```javascript
+const result = await eiip.rotateImage(file, 90);
+```
+
+##### `flipImage(input, direction, options)`
+
+Flip image horizontally or vertically.
+
+**Example:**
+```javascript
+const result = await eiip.flipImage(file, 'horizontal');
+```
+
+---
+
+#### Image Compression Methods (v1.2.0)
+
+##### `compressImage(input, options)`
+
+Compress image to target size.
+
+**Example:**
+```javascript
+const result = await eiip.compressImage(file, {
+    maxSizeKB: 500,
+    format: 'webp'
+});
+```
+
+##### `optimizeImage(input, options)`
+
+Smart optimization for web.
+
+**Example:**
+```javascript
+const result = await eiip.optimizeImage(file);
+```
+
+---
+
+#### Text Overlay Methods (v1.2.0)
+
+##### `addWatermark(input, options)`
+
+Add watermark to image.
+
+**Example:**
+```javascript
+const result = await eiip.addWatermark(file, {
+    text: '© 2024',
+    position: 'bottom-right'
+});
+```
+
+##### `addText(input, options)`
+
+Add custom text overlay.
+
+**Example:**
+```javascript
+const result = await eiip.addText(file, {
+    text: 'Hello World',
+    x: 'center',
+    y: 'center',
+    fontSize: 60
+});
+```
+
+---
+
+#### Color Adjustment Methods (v1.2.0)
+
+##### `adjustColors(input, options)`
+
+Adjust image colors (HSL).
+
+**Example:**
+```javascript
+const result = await eiip.adjustColors(file, {
+    saturation: 1.3,
+    hue: 15,
+    lightness: 5,
+    vibrance: 1.2
+});
+```
+
+---
+
 ### Static Properties
 
 #### `EIIP.version`
@@ -290,13 +438,41 @@ Direct access to RasterToSvg class.
 #### `EIIP.ImageLayerMerger`
 Direct access to ImageLayerMerger class.
 
+#### `EIIP.ImageCropper` (v1.1.0)
+Direct access to ImageCropper class.
+
+#### `EIIP.ImageEffects` (v1.1.0)
+Direct access to ImageEffects class.
+
+#### `EIIP.PDFConverter` (v1.1.0)
+Direct access to PDFConverter class.
+
+#### `EIIP.ImageResizer` (v1.2.0)
+Direct access to ImageResizer class.
+
+#### `EIIP.ImageRotator` (v1.2.0)
+Direct access to ImageRotator class.
+
+#### `EIIP.ImageCompressor` (v1.2.0)
+Direct access to ImageCompressor class.
+
+#### `EIIP.TextOverlay` (v1.2.0)
+Direct access to TextOverlay class.
+
+#### `EIIP.ColorAdjuster` (v1.2.0)
+Direct access to ColorAdjuster class.
+
 **Example:**
 ```javascript
-console.log(EIIP.version); // "1.0.1"
+console.log(EIIP.version); // "1.2.0"
 
 // Use classes directly
 const converter = new EIIP.SvgToRaster({ width: 800 });
 const result = await converter.convertFromFile(svgFile);
+
+// v1.2.0 classes
+const resizer = new EIIP.ImageResizer();
+const resized = await resizer.resize(file, { width: 800, height: 600 });
 ```
 
 ---
@@ -883,6 +1059,400 @@ async function processAndDownload(svgFile, logoFile) {
     eiip.downloadImage(merged.dataUrl, 'final-image.png');
 }
 ```
+
+---
+
+## Image Resize & Scale (v1.2.0)
+
+### ImageResizer Class
+
+Resize and scale images with quality preservation.
+
+#### Methods
+
+##### `resize(input, options)`
+
+Resize image to specific dimensions with fit modes.
+
+**Parameters:**
+- `input` - Image source (File, Blob, data URL, canvas, or image element)
+- `options` - Configuration object:
+  - `width` (number) - Target width in pixels
+  - `height` (number) - Target height in pixels
+  - `fit` (string) - Fit mode: 'contain', 'cover', or 'fill' (default: 'contain')
+  - `format` (string) - Output format: 'png', 'jpeg', 'webp' (default: 'png')
+  - `quality` (number) - Quality 0-1 (default: 0.92)
+
+**Returns:** Promise resolving to result object with canvas, dataUrl, blob, width, height
+
+**Example:**
+```javascript
+const resizer = new EIIP.ImageResizer();
+
+// Contain - fit inside dimensions
+const result = await resizer.resize(file, {
+    width: 800,
+    height: 600,
+    fit: 'contain'
+});
+
+// Cover - fill area, crop if needed
+const result2 = await resizer.resize(file, {
+    width: 800,
+    height: 600,
+    fit: 'cover'
+});
+
+// Fill - stretch to fill
+const result3 = await resizer.resize(file, {
+    width: 800,
+    height: 600,
+    fit: 'fill'
+});
+```
+
+##### `scale(input, scaleFactor, options)`
+
+Scale image by percentage.
+
+**Parameters:**
+- `input` - Image source
+- `scaleFactor` (number) - Scale factor (0.5 = 50%, 2.0 = 200%)
+- `options` - Configuration object:
+  - `format` (string) - Output format (default: 'png')
+  - `quality` (number) - Quality 0-1 (default: 0.92)
+
+**Example:**
+```javascript
+// Scale to 50%
+const result = await resizer.scale(file, 0.5);
+
+// Scale to 200%
+const result2 = await resizer.scale(file, 2.0);
+```
+
+##### `createThumbnail(input, options)`
+
+Create thumbnail automatically.
+
+**Parameters:**
+- `input` - Image source
+- `options` - Configuration object:
+  - `size` (number) - Thumbnail size (width & height) in pixels (default: 150)
+  - `format` (string) - Output format (default: 'webp')
+  - `quality` (number) - Quality 0-1 (default: 0.85)
+
+**Example:**
+```javascript
+const thumb = await resizer.createThumbnail(file, {
+    size: 200,
+    format: 'webp',
+    quality: 0.85
+});
+```
+
+#### Constants
+
+```javascript
+EIIP.ImageResizer.FIT_MODES = {
+    CONTAIN: 'contain',
+    COVER: 'cover',
+    FILL: 'fill'
+}
+```
+
+---
+
+## Image Rotation & Flip (v1.2.0)
+
+### ImageRotator Class
+
+Rotate and flip images.
+
+#### Methods
+
+##### `rotate(input, degrees, options)`
+
+Rotate image by specified angle.
+
+**Parameters:**
+- `input` - Image source
+- `degrees` (number) - Rotation angle (90, 180, 270, or custom)
+- `options` - Configuration object:
+  - `format` (string) - Output format (default: 'png')
+  - `quality` (number) - Quality 0-1 (default: 0.92)
+
+**Example:**
+```javascript
+const rotator = new EIIP.ImageRotator();
+
+// Rotate 90 degrees
+const result = await rotator.rotate(file, 90);
+
+// Rotate 180 degrees
+const result2 = await rotator.rotate(file, 180);
+
+// Rotate 270 degrees
+const result3 = await rotator.rotate(file, 270);
+```
+
+##### `flip(input, direction, options)`
+
+Flip image horizontally or vertically.
+
+**Parameters:**
+- `input` - Image source
+- `direction` (string) - 'horizontal' or 'vertical'
+- `options` - Configuration object:
+  - `format` (string) - Output format (default: 'png')
+  - `quality` (number) - Quality 0-1 (default: 0.92)
+
+**Example:**
+```javascript
+// Flip horizontal
+const result = await rotator.flip(file, 'horizontal');
+
+// Flip vertical
+const result2 = await rotator.flip(file, 'vertical');
+```
+
+#### Constants
+
+```javascript
+EIIP.ImageRotator.DIRECTIONS = {
+    HORIZONTAL: 'horizontal',
+    VERTICAL: 'vertical'
+}
+```
+
+---
+
+## Image Compression (v1.2.0)
+
+### ImageCompressor Class
+
+Smart image compression and optimization.
+
+#### Methods
+
+##### `compress(input, options)`
+
+Compress image to target file size.
+
+**Parameters:**
+- `input` - Image source
+- `options` - Configuration object:
+  - `maxSizeKB` (number) - Target maximum size in KB (default: 500)
+  - `format` (string) - Output format: 'webp', 'jpeg', 'png' (default: 'jpeg')
+  - `quality` (number) - Initial quality 0-1 (default: 0.9)
+  - `maxWidth` (number) - Optional max width
+  - `maxHeight` (number) - Optional max height
+
+**Returns:** Promise with sizeKB, quality, compressionRatio, and standard outputs
+
+**Example:**
+```javascript
+const compressor = new EIIP.ImageCompressor();
+
+// Compress to under 500KB
+const result = await compressor.compress(file, {
+    maxSizeKB: 500,
+    format: 'webp'
+});
+
+console.log(`Compressed to ${result.sizeKB}KB`);
+console.log(`Quality: ${result.quality}`);
+console.log(`Savings: ${result.compressionRatio}%`);
+```
+
+##### `optimize(input, options)`
+
+Smart optimization with defaults for web delivery.
+
+**Parameters:**
+- `input` - Image source
+- `options` - Configuration object:
+  - `maxSizeKB` (number) - Target size (default: 800)
+  - `maxWidth` (number) - Max width (default: 1920)
+  - `maxHeight` (number) - Max height (default: 1080)
+  - `format` (string) - Format (default: 'webp')
+  - `quality` (number) - Quality (default: 0.85)
+
+**Example:**
+```javascript
+// Smart optimize for web
+const result = await compressor.optimize(file);
+```
+
+---
+
+## Text Overlay & Watermark (v1.2.0)
+
+### TextOverlay Class
+
+Add watermarks and text to images.
+
+#### Methods
+
+##### `addWatermark(input, options)`
+
+Add watermark text to image.
+
+**Parameters:**
+- `input` - Image source
+- `options` - Configuration object:
+  - `text` (string) - Watermark text (default: '© Watermark')
+  - `position` (string) - Position preset (default: 'bottom-right')
+  - `fontSize` (number) - Font size (auto-calculated by default)
+  - `fontFamily` (string) - Font family (default: 'Arial')
+  - `color` (string) - Text color (default: '#ffffff')
+  - `opacity` (number) - Text opacity 0-1 (default: 0.5)
+  - `shadow` (boolean) - Add shadow (default: false)
+  - `padding` (number) - Padding from edge (default: 20)
+  - `format` (string) - Output format (default: 'png')
+  - `quality` (number) - Quality 0-1 (default: 0.92)
+
+**Example:**
+```javascript
+const overlay = new EIIP.TextOverlay();
+
+// Add watermark
+const result = await overlay.addWatermark(file, {
+    text: '© 2024 Your Company',
+    position: 'bottom-right',
+    opacity: 0.7,
+    color: '#ffffff',
+    shadow: true
+});
+```
+
+##### `addText(input, options)`
+
+Add custom text overlay.
+
+**Parameters:**
+- `input` - Image source
+- `options` - Configuration object:
+  - `text` (string) - Text to add (default: 'Text')
+  - `fontSize` (number) - Font size (default: 48)
+  - `fontFamily` (string) - Font family (default: 'Arial')
+  - `color` (string) - Text color (default: '#000000')
+  - `backgroundColor` (string) - Optional background color
+  - `x` (number|'center') - X position (default: 0)
+  - `y` (number|'center') - Y position (default: 50)
+  - `align` (string) - Text alignment: 'left', 'center', 'right' (default: 'left')
+  - `bold` (boolean) - Bold text (default: false)
+  - `italic` (boolean) - Italic text (default: false)
+  - `shadow` (boolean) - Add shadow (default: false)
+  - `shadowColor` (string) - Shadow color (default: 'rgba(0,0,0,0.5)')
+  - `shadowBlur` (number) - Shadow blur (default: 4)
+  - `shadowOffsetX` (number) - Shadow X offset (default: 2)
+  - `shadowOffsetY` (number) - Shadow Y offset (default: 2)
+  - `stroke` (boolean) - Add text stroke (default: false)
+  - `strokeColor` (string) - Stroke color (default: '#ffffff')
+  - `strokeWidth` (number) - Stroke width (default: 2)
+  - `format` (string) - Output format (default: 'png')
+  - `quality` (number) - Quality 0-1 (default: 0.92)
+
+**Example:**
+```javascript
+// Add centered text
+const result = await overlay.addText(file, {
+    text: 'Hello World',
+    fontSize: 60,
+    color: '#000000',
+    x: 'center',
+    y: 'center',
+    bold: true,
+    shadow: true,
+    stroke: true,
+    strokeColor: '#ffffff'
+});
+```
+
+#### Constants
+
+```javascript
+EIIP.TextOverlay.POSITIONS = {
+    TOP_LEFT: 'top-left',
+    TOP_RIGHT: 'top-right',
+    BOTTOM_LEFT: 'bottom-left',
+    BOTTOM_RIGHT: 'bottom-right',
+    CENTER: 'center'
+}
+```
+
+---
+
+## Color Adjustment (v1.2.0)
+
+### ColorAdjuster Class
+
+Advanced color manipulation using HSL color space.
+
+#### Methods
+
+##### `adjustColors(input, options)`
+
+Adjust multiple color properties.
+
+**Parameters:**
+- `input` - Image source
+- `options` - Configuration object:
+  - `saturation` (number) - Saturation multiplier 0-2 (1 = no change, default: 1.0)
+  - `hue` (number) - Hue rotation in degrees -180 to 180 (default: 0)
+  - `lightness` (number) - Lightness adjustment -50 to 50 (default: 0)
+  - `vibrance` (number) - Vibrance multiplier 0-2 (1 = no change, default: 1.0)
+  - `format` (string) - Output format (default: 'png')
+  - `quality` (number) - Quality 0-1 (default: 0.92)
+
+**Returns:** Promise with adjustments object containing applied values
+
+**Example:**
+```javascript
+const adjuster = new EIIP.ColorAdjuster();
+
+// Enhance colors
+const result = await adjuster.adjustColors(file, {
+    saturation: 1.3,    // Increase saturation by 30%
+    hue: 15,            // Warm color shift
+    lightness: 5,       // Slightly brighter
+    vibrance: 1.2       // Enhance vibrance
+});
+
+// Desaturate (black & white)
+const bw = await adjuster.adjustColors(file, {
+    saturation: 0
+});
+
+// Cool tone
+const cool = await adjuster.adjustColors(file, {
+    hue: -30,           // Blue shift
+    saturation: 0.9,
+    lightness: 5
+});
+```
+
+**Color Parameters Explained:**
+- **Saturation**: Controls color intensity
+  - 0 = Grayscale (no color)
+  - 1 = Original colors
+  - 2 = Maximum saturation
+  
+- **Hue**: Rotates colors around color wheel
+  - -180 to -90 = Cool tones (blue/cyan)
+  - 0 = Original colors
+  - +90 to +180 = Warm tones (red/orange)
+  
+- **Lightness**: Adjusts brightness
+  - -50 = Much darker
+  - 0 = Original brightness
+  - +50 = Much lighter
+  
+- **Vibrance**: Selective saturation (boosts muted colors more)
+  - 0 = Desaturated
+  - 1 = Original
+  - 2 = Highly vibrant
 
 ---
 
