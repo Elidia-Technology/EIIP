@@ -104,3 +104,7 @@ Thumbs.db
 # Build artifacts
 *.map
 !eiip.min.js.map
+
+# Internal documentation (not for version control)
+NPM-PUBLISHING-GUIDE.md
+KNITTING-CSS-EMBEDDED-SUMMARY.md
