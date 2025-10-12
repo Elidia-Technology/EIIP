@@ -4,6 +4,19 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Configuration files
+package.json
+package-lock.json
+.npmignore
+tsconfig.json
+jsconfig.json
+.babelrc
+.eslintrc*
+.prettierrc*
+webpack.config.js
+rollup.config.js
+vite.config.js
+
 # Runtime data
 pids
 *.pid
@@ -95,7 +108,7 @@ ehthumbs.db
 Thumbs.db
 
 # IDE files
-.vscode/settings.json
+.vscode/
 .idea/
 *.swp
 *.swo
