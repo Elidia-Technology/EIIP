@@ -2024,6 +2024,903 @@
     }
 
     /**
+     * Image Resizer Class
+     * Resize and scale images with quality preservation
+     */
+    class ImageResizer {
+        constructor(options = {}) {
+            this.debug = options.debug || false;
+            
+            if (this.debug) {
+                console.log('✅ ImageResizer initialized');
+            }
+        }
+
+        /**
+         * Resize image to specific dimensions
+         */
+        async resize(input, options = {}) {
+            try {
+                const img = await this.loadImage(input);
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                const { width, height, fit = 'contain', quality = 0.92, format = 'png' } = options;
+                
+                let targetWidth = width || img.width;
+                let targetHeight = height || img.height;
+                let sourceX = 0, sourceY = 0, sourceWidth = img.width, sourceHeight = img.height;
+                
+                if (fit === 'contain') {
+                    // Fit inside dimensions, maintain aspect ratio
+                    const ratio = Math.min(targetWidth / img.width, targetHeight / img.height);
+                    targetWidth = img.width * ratio;
+                    targetHeight = img.height * ratio;
+                } else if (fit === 'cover') {
+                    // Cover entire area, crop if needed
+                    const ratio = Math.max(targetWidth / img.width, targetHeight / img.height);
+                    const newWidth = img.width * ratio;
+                    const newHeight = img.height * ratio;
+                    sourceX = (img.width - targetWidth / ratio) / 2;
+                    sourceY = (img.height - targetHeight / ratio) / 2;
+                    sourceWidth = targetWidth / ratio;
+                    sourceHeight = targetHeight / ratio;
+                } else if (fit === 'fill') {
+                    // Stretch to fill, ignore aspect ratio
+                    // Use target dimensions as-is
+                }
+                
+                canvas.width = Math.round(targetWidth);
+                canvas.height = Math.round(targetHeight);
+                
+                // Enable image smoothing for better quality
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                
+                if (fit === 'cover') {
+                    ctx.drawImage(img, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, targetWidth, targetHeight);
+                } else {
+                    ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+                }
+                
+                const dataUrl = canvas.toDataURL(`image/${format}`, quality);
+                
+                if (this.debug) {
+                    console.log(`✅ Resized from ${img.width}x${img.height} to ${canvas.width}x${canvas.height}`);
+                }
+                
+                return {
+                    canvas,
+                    dataUrl,
+                    blob: await this.convertToBlob(canvas, format, quality),
+                    width: canvas.width,
+                    height: canvas.height,
+                    originalWidth: img.width,
+                    originalHeight: img.height
+                };
+            } catch (error) {
+                if (this.debug) {
+                    console.error('❌ Resize failed:', error);
+                }
+                throw new Error(`Resize failed: ${error.message}`);
+            }
+        }
+
+        /**
+         * Create thumbnail
+         */
+        async createThumbnail(input, options = {}) {
+            const size = options.size || 150;
+            return await this.resize(input, {
+                width: size,
+                height: size,
+                fit: 'cover',
+                quality: options.quality || 0.85,
+                format: options.format || 'webp'
+            });
+        }
+
+        /**
+         * Scale image by percentage
+         */
+        async scale(input, scaleFactor, options = {}) {
+            try {
+                const img = await this.loadImage(input);
+                const width = Math.round(img.width * scaleFactor);
+                const height = Math.round(img.height * scaleFactor);
+                
+                return await this.resize(img, {
+                    width,
+                    height,
+                    fit: 'fill',
+                    quality: options.quality || 0.92,
+                    format: options.format || 'png'
+                });
+            } catch (error) {
+                if (this.debug) {
+                    console.error('❌ Scale failed:', error);
+                }
+                throw new Error(`Scale failed: ${error.message}`);
+            }
+        }
+
+        async loadImage(input) {
+            if (input instanceof HTMLImageElement) {
+                return input;
+            }
+            if (input instanceof HTMLCanvasElement) {
+                const img = new Image();
+                img.src = input.toDataURL();
+                await new Promise((resolve) => { img.onload = resolve; });
+                return img;
+            }
+            
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = () => reject(new Error('Failed to load image'));
+                
+                if (typeof input === 'string') {
+                    img.src = input;
+                } else if (input instanceof File || input instanceof Blob) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => { img.src = e.target.result; };
+                    reader.onerror = () => reject(new Error('Failed to read file'));
+                    reader.readAsDataURL(input);
+                } else {
+                    reject(new Error('Invalid input type'));
+                }
+            });
+        }
+
+        async convertToBlob(canvas, format = 'png', quality = 0.9) {
+            return new Promise((resolve, reject) => {
+                canvas.toBlob(
+                    (blob) => blob ? resolve(blob) : reject(new Error('Failed to create blob')),
+                    `image/${format}`,
+                    quality
+                );
+            });
+        }
+
+        static FIT_MODES = {
+            CONTAIN: 'contain',
+            COVER: 'cover',
+            FILL: 'fill'
+        };
+    }
+
+    /**
+     * Image Rotator Class
+     * Rotate and flip images
+     */
+    class ImageRotator {
+        constructor(options = {}) {
+            this.debug = options.debug || false;
+            
+            if (this.debug) {
+                console.log('✅ ImageRotator initialized');
+            }
+        }
+
+        /**
+         * Rotate image by degrees
+         */
+        async rotate(input, degrees, options = {}) {
+            try {
+                const img = await this.loadImage(input);
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                const radians = (degrees * Math.PI) / 180;
+                const isRotated90 = degrees % 180 !== 0;
+                
+                // Set canvas size based on rotation
+                if (isRotated90) {
+                    canvas.width = img.height;
+                    canvas.height = img.width;
+                } else {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                }
+                
+                // Rotate around center
+                ctx.translate(canvas.width / 2, canvas.height / 2);
+                ctx.rotate(radians);
+                ctx.drawImage(img, -img.width / 2, -img.height / 2);
+                
+                const format = options.format || 'png';
+                const quality = options.quality || 0.92;
+                const dataUrl = canvas.toDataURL(`image/${format}`, quality);
+                
+                if (this.debug) {
+                    console.log(`✅ Rotated image by ${degrees}°`);
+                }
+                
+                return {
+                    canvas,
+                    dataUrl,
+                    blob: await this.convertToBlob(canvas, format, quality),
+                    width: canvas.width,
+                    height: canvas.height,
+                    rotation: degrees
+                };
+            } catch (error) {
+                if (this.debug) {
+                    console.error('❌ Rotation failed:', error);
+                }
+                throw new Error(`Rotation failed: ${error.message}`);
+            }
+        }
+
+        /**
+         * Flip image horizontally or vertically
+         */
+        async flip(input, direction = 'horizontal', options = {}) {
+            try {
+                const img = await this.loadImage(input);
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                canvas.width = img.width;
+                canvas.height = img.height;
+                
+                ctx.save();
+                
+                if (direction === 'horizontal') {
+                    ctx.scale(-1, 1);
+                    ctx.drawImage(img, -img.width, 0);
+                } else {
+                    ctx.scale(1, -1);
+                    ctx.drawImage(img, 0, -img.height);
+                }
+                
+                ctx.restore();
+                
+                const format = options.format || 'png';
+                const quality = options.quality || 0.92;
+                const dataUrl = canvas.toDataURL(`image/${format}`, quality);
+                
+                if (this.debug) {
+                    console.log(`✅ Flipped image ${direction}`);
+                }
+                
+                return {
+                    canvas,
+                    dataUrl,
+                    blob: await this.convertToBlob(canvas, format, quality),
+                    width: canvas.width,
+                    height: canvas.height,
+                    flip: direction
+                };
+            } catch (error) {
+                if (this.debug) {
+                    console.error('❌ Flip failed:', error);
+                }
+                throw new Error(`Flip failed: ${error.message}`);
+            }
+        }
+
+        async loadImage(input) {
+            if (input instanceof HTMLImageElement) {
+                return input;
+            }
+            if (input instanceof HTMLCanvasElement) {
+                const img = new Image();
+                img.src = input.toDataURL();
+                await new Promise((resolve) => { img.onload = resolve; });
+                return img;
+            }
+            
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = () => reject(new Error('Failed to load image'));
+                
+                if (typeof input === 'string') {
+                    img.src = input;
+                } else if (input instanceof File || input instanceof Blob) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => { img.src = e.target.result; };
+                    reader.onerror = () => reject(new Error('Failed to read file'));
+                    reader.readAsDataURL(input);
+                } else {
+                    reject(new Error('Invalid input type'));
+                }
+            });
+        }
+
+        async convertToBlob(canvas, format = 'png', quality = 0.9) {
+            return new Promise((resolve, reject) => {
+                canvas.toBlob(
+                    (blob) => blob ? resolve(blob) : reject(new Error('Failed to create blob')),
+                    `image/${format}`,
+                    quality
+                );
+            });
+        }
+
+        static DIRECTIONS = {
+            HORIZONTAL: 'horizontal',
+            VERTICAL: 'vertical'
+        };
+    }
+
+    /**
+     * Image Compressor Class
+     * Compress and optimize images
+     */
+    class ImageCompressor {
+        constructor(options = {}) {
+            this.debug = options.debug || false;
+            
+            if (this.debug) {
+                console.log('✅ ImageCompressor initialized');
+            }
+        }
+
+        /**
+         * Compress image to target size
+         */
+        async compress(input, options = {}) {
+            try {
+                const img = await this.loadImage(input);
+                const maxSizeKB = options.maxSizeKB || 500;
+                const format = options.format || 'jpeg';
+                let quality = options.quality || 0.9;
+                
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Optionally resize if maxWidth/maxHeight specified
+                let width = img.width;
+                let height = img.height;
+                
+                if (options.maxWidth && width > options.maxWidth) {
+                    height = (options.maxWidth / width) * height;
+                    width = options.maxWidth;
+                }
+                if (options.maxHeight && height > options.maxHeight) {
+                    width = (options.maxHeight / height) * width;
+                    height = options.maxHeight;
+                }
+                
+                canvas.width = Math.round(width);
+                canvas.height = Math.round(height);
+                
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                
+                // Try to achieve target file size
+                let blob;
+                let attempts = 0;
+                const maxAttempts = 10;
+                
+                while (attempts < maxAttempts) {
+                    blob = await this.convertToBlob(canvas, format, quality);
+                    const sizeKB = blob.size / 1024;
+                    
+                    if (sizeKB <= maxSizeKB || quality <= 0.1) {
+                        break;
+                    }
+                    
+                    // Reduce quality
+                    quality -= 0.1;
+                    attempts++;
+                }
+                
+                const dataUrl = await this.blobToDataUrl(blob);
+                const finalSizeKB = (blob.size / 1024).toFixed(2);
+                
+                if (this.debug) {
+                    console.log(`✅ Compressed to ${finalSizeKB}KB (quality: ${quality.toFixed(2)})`);
+                }
+                
+                return {
+                    canvas,
+                    dataUrl,
+                    blob,
+                    width: canvas.width,
+                    height: canvas.height,
+                    sizeKB: parseFloat(finalSizeKB),
+                    quality,
+                    originalSize: img.width * img.height,
+                    compressionRatio: ((1 - blob.size / (img.width * img.height * 4)) * 100).toFixed(2)
+                };
+            } catch (error) {
+                if (this.debug) {
+                    console.error('❌ Compression failed:', error);
+                }
+                throw new Error(`Compression failed: ${error.message}`);
+            }
+        }
+
+        /**
+         * Optimize image (smart compression)
+         */
+        async optimize(input, options = {}) {
+            return await this.compress(input, {
+                maxSizeKB: options.maxSizeKB || 800,
+                maxWidth: options.maxWidth || 1920,
+                maxHeight: options.maxHeight || 1080,
+                format: options.format || 'webp',
+                quality: options.quality || 0.85
+            });
+        }
+
+        async loadImage(input) {
+            if (input instanceof HTMLImageElement) {
+                return input;
+            }
+            if (input instanceof HTMLCanvasElement) {
+                const img = new Image();
+                img.src = input.toDataURL();
+                await new Promise((resolve) => { img.onload = resolve; });
+                return img;
+            }
+            
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = () => reject(new Error('Failed to load image'));
+                
+                if (typeof input === 'string') {
+                    img.src = input;
+                } else if (input instanceof File || input instanceof Blob) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => { img.src = e.target.result; };
+                    reader.onerror = () => reject(new Error('Failed to read file'));
+                    reader.readAsDataURL(input);
+                } else {
+                    reject(new Error('Invalid input type'));
+                }
+            });
+        }
+
+        async convertToBlob(canvas, format = 'jpeg', quality = 0.9) {
+            return new Promise((resolve, reject) => {
+                canvas.toBlob(
+                    (blob) => blob ? resolve(blob) : reject(new Error('Failed to create blob')),
+                    `image/${format}`,
+                    quality
+                );
+            });
+        }
+
+        async blobToDataUrl(blob) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        }
+    }
+
+    /**
+     * Text Overlay Class
+     * Add watermarks and text to images
+     */
+    class TextOverlay {
+        constructor(options = {}) {
+            this.debug = options.debug || false;
+            
+            if (this.debug) {
+                console.log('✅ TextOverlay initialized');
+            }
+        }
+
+        /**
+         * Add watermark text
+         */
+        async addWatermark(input, options = {}) {
+            try {
+                const img = await this.loadImage(input);
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                canvas.width = img.width;
+                canvas.height = img.height;
+                
+                // Draw original image
+                ctx.drawImage(img, 0, 0);
+                
+                const text = options.text || '© Watermark';
+                const fontSize = options.fontSize || Math.max(20, Math.floor(img.width / 30));
+                const fontFamily = options.fontFamily || 'Arial';
+                const color = options.color || '#ffffff';
+                const opacity = options.opacity !== undefined ? options.opacity : 0.5;
+                const position = options.position || 'bottom-right';
+                const padding = options.padding || 20;
+                
+                ctx.font = `${fontSize}px ${fontFamily}`;
+                ctx.fillStyle = color;
+                ctx.globalAlpha = opacity;
+                
+                // Calculate text dimensions
+                const metrics = ctx.measureText(text);
+                const textWidth = metrics.width;
+                const textHeight = fontSize;
+                
+                // Calculate position
+                let x, y;
+                if (position === 'bottom-right') {
+                    x = canvas.width - textWidth - padding;
+                    y = canvas.height - padding;
+                } else if (position === 'bottom-left') {
+                    x = padding;
+                    y = canvas.height - padding;
+                } else if (position === 'top-right') {
+                    x = canvas.width - textWidth - padding;
+                    y = textHeight + padding;
+                } else if (position === 'top-left') {
+                    x = padding;
+                    y = textHeight + padding;
+                } else if (position === 'center') {
+                    x = (canvas.width - textWidth) / 2;
+                    y = canvas.height / 2;
+                }
+                
+                // Add shadow if specified
+                if (options.shadow) {
+                    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                    ctx.shadowBlur = 4;
+                    ctx.shadowOffsetX = 2;
+                    ctx.shadowOffsetY = 2;
+                }
+                
+                ctx.fillText(text, x, y);
+                
+                ctx.globalAlpha = 1.0;
+                ctx.shadowColor = 'transparent';
+                
+                const format = options.format || 'png';
+                const quality = options.quality || 0.92;
+                const dataUrl = canvas.toDataURL(`image/${format}`, quality);
+                
+                if (this.debug) {
+                    console.log(`✅ Watermark added: "${text}"`);
+                }
+                
+                return {
+                    canvas,
+                    dataUrl,
+                    blob: await this.convertToBlob(canvas, format, quality),
+                    width: canvas.width,
+                    height: canvas.height,
+                    watermark: text
+                };
+            } catch (error) {
+                if (this.debug) {
+                    console.error('❌ Watermark failed:', error);
+                }
+                throw new Error(`Watermark failed: ${error.message}`);
+            }
+        }
+
+        /**
+         * Add text overlay
+         */
+        async addText(input, options = {}) {
+            try {
+                const img = await this.loadImage(input);
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                canvas.width = img.width;
+                canvas.height = img.height;
+                
+                // Draw original image
+                ctx.drawImage(img, 0, 0);
+                
+                const text = options.text || 'Text';
+                const fontSize = options.fontSize || 48;
+                const fontFamily = options.fontFamily || 'Arial';
+                const color = options.color || '#000000';
+                const backgroundColor = options.backgroundColor;
+                const x = options.x === 'center' ? null : (options.x || 0);
+                const y = options.y === 'center' ? null : (options.y || 50);
+                const align = options.align || 'left';
+                const bold = options.bold ? 'bold ' : '';
+                const italic = options.italic ? 'italic ' : '';
+                
+                ctx.font = `${bold}${italic}${fontSize}px ${fontFamily}`;
+                ctx.fillStyle = color;
+                ctx.textAlign = align;
+                
+                // Calculate position if center
+                const metrics = ctx.measureText(text);
+                let finalX = x !== null ? x : canvas.width / 2;
+                let finalY = y !== null ? y : canvas.height / 2;
+                
+                if (x === null) {
+                    ctx.textAlign = 'center';
+                }
+                
+                // Draw background if specified
+                if (backgroundColor) {
+                    const padding = 10;
+                    const bgX = finalX - (x === null ? metrics.width / 2 : 0) - padding;
+                    const bgY = finalY - fontSize - padding;
+                    const bgWidth = metrics.width + padding * 2;
+                    const bgHeight = fontSize + padding * 2;
+                    
+                    ctx.fillStyle = backgroundColor;
+                    ctx.fillRect(bgX, bgY, bgWidth, bgHeight);
+                    ctx.fillStyle = color;
+                }
+                
+                // Add shadow if specified
+                if (options.shadow) {
+                    ctx.shadowColor = options.shadowColor || 'rgba(0,0,0,0.5)';
+                    ctx.shadowBlur = options.shadowBlur || 4;
+                    ctx.shadowOffsetX = options.shadowOffsetX || 2;
+                    ctx.shadowOffsetY = options.shadowOffsetY || 2;
+                }
+                
+                // Draw text
+                ctx.fillText(text, finalX, finalY);
+                
+                // Add stroke if specified
+                if (options.stroke) {
+                    ctx.strokeStyle = options.strokeColor || '#ffffff';
+                    ctx.lineWidth = options.strokeWidth || 2;
+                    ctx.strokeText(text, finalX, finalY);
+                }
+                
+                ctx.shadowColor = 'transparent';
+                
+                const format = options.format || 'png';
+                const quality = options.quality || 0.92;
+                const dataUrl = canvas.toDataURL(`image/${format}`, quality);
+                
+                if (this.debug) {
+                    console.log(`✅ Text added: "${text}"`);
+                }
+                
+                return {
+                    canvas,
+                    dataUrl,
+                    blob: await this.convertToBlob(canvas, format, quality),
+                    width: canvas.width,
+                    height: canvas.height,
+                    text
+                };
+            } catch (error) {
+                if (this.debug) {
+                    console.error('❌ Text overlay failed:', error);
+                }
+                throw new Error(`Text overlay failed: ${error.message}`);
+            }
+        }
+
+        async loadImage(input) {
+            if (input instanceof HTMLImageElement) {
+                return input;
+            }
+            if (input instanceof HTMLCanvasElement) {
+                const img = new Image();
+                img.src = input.toDataURL();
+                await new Promise((resolve) => { img.onload = resolve; });
+                return img;
+            }
+            
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = () => reject(new Error('Failed to load image'));
+                
+                if (typeof input === 'string') {
+                    img.src = input;
+                } else if (input instanceof File || input instanceof Blob) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => { img.src = e.target.result; };
+                    reader.onerror = () => reject(new Error('Failed to read file'));
+                    reader.readAsDataURL(input);
+                } else {
+                    reject(new Error('Invalid input type'));
+                }
+            });
+        }
+
+        async convertToBlob(canvas, format = 'png', quality = 0.9) {
+            return new Promise((resolve, reject) => {
+                canvas.toBlob(
+                    (blob) => blob ? resolve(blob) : reject(new Error('Failed to create blob')),
+                    `image/${format}`,
+                    quality
+                );
+            });
+        }
+
+        static POSITIONS = {
+            TOP_LEFT: 'top-left',
+            TOP_RIGHT: 'top-right',
+            BOTTOM_LEFT: 'bottom-left',
+            BOTTOM_RIGHT: 'bottom-right',
+            CENTER: 'center'
+        };
+    }
+
+    /**
+     * Color Adjuster Class
+     * Advanced color manipulation
+     */
+    class ColorAdjuster {
+        constructor(options = {}) {
+            this.debug = options.debug || false;
+            
+            if (this.debug) {
+                console.log('✅ ColorAdjuster initialized');
+            }
+        }
+
+        /**
+         * Adjust multiple color properties
+         */
+        async adjustColors(input, options = {}) {
+            try {
+                const img = await this.loadImage(input);
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                canvas.width = img.width;
+                canvas.height = img.height;
+                
+                ctx.drawImage(img, 0, 0);
+                
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+                
+                const saturation = options.saturation !== undefined ? options.saturation : 1.0;
+                const hue = options.hue !== undefined ? options.hue : 0;
+                const lightness = options.lightness !== undefined ? options.lightness : 0;
+                const vibrance = options.vibrance !== undefined ? options.vibrance : 1.0;
+                
+                for (let i = 0; i < data.length; i += 4) {
+                    let r = data[i];
+                    let g = data[i + 1];
+                    let b = data[i + 2];
+                    
+                    // Convert to HSL
+                    let hsl = this.rgbToHsl(r, g, b);
+                    
+                    // Apply adjustments
+                    hsl.h = (hsl.h + hue / 360) % 1;
+                    hsl.s = Math.max(0, Math.min(1, hsl.s * saturation * vibrance));
+                    hsl.l = Math.max(0, Math.min(1, hsl.l + lightness / 100));
+                    
+                    // Convert back to RGB
+                    const rgb = this.hslToRgb(hsl.h, hsl.s, hsl.l);
+                    
+                    data[i] = rgb.r;
+                    data[i + 1] = rgb.g;
+                    data[i + 2] = rgb.b;
+                }
+                
+                ctx.putImageData(imageData, 0, 0);
+                
+                const format = options.format || 'png';
+                const quality = options.quality || 0.92;
+                const dataUrl = canvas.toDataURL(`image/${format}`, quality);
+                
+                if (this.debug) {
+                    console.log('✅ Color adjustments applied');
+                }
+                
+                return {
+                    canvas,
+                    dataUrl,
+                    blob: await this.convertToBlob(canvas, format, quality),
+                    width: canvas.width,
+                    height: canvas.height,
+                    adjustments: { saturation, hue, lightness, vibrance }
+                };
+            } catch (error) {
+                if (this.debug) {
+                    console.error('❌ Color adjustment failed:', error);
+                }
+                throw new Error(`Color adjustment failed: ${error.message}`);
+            }
+        }
+
+        rgbToHsl(r, g, b) {
+            r /= 255;
+            g /= 255;
+            b /= 255;
+            
+            const max = Math.max(r, g, b);
+            const min = Math.min(r, g, b);
+            let h, s, l = (max + min) / 2;
+            
+            if (max === min) {
+                h = s = 0;
+            } else {
+                const d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                
+                switch (max) {
+                    case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+                    case g: h = ((b - r) / d + 2) / 6; break;
+                    case b: h = ((r - g) / d + 4) / 6; break;
+                }
+            }
+            
+            return { h, s, l };
+        }
+
+        hslToRgb(h, s, l) {
+            let r, g, b;
+            
+            if (s === 0) {
+                r = g = b = l;
+            } else {
+                const hue2rgb = (p, q, t) => {
+                    if (t < 0) t += 1;
+                    if (t > 1) t -= 1;
+                    if (t < 1/6) return p + (q - p) * 6 * t;
+                    if (t < 1/2) return q;
+                    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                    return p;
+                };
+                
+                const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                const p = 2 * l - q;
+                
+                r = hue2rgb(p, q, h + 1/3);
+                g = hue2rgb(p, q, h);
+                b = hue2rgb(p, q, h - 1/3);
+            }
+            
+            return {
+                r: Math.round(r * 255),
+                g: Math.round(g * 255),
+                b: Math.round(b * 255)
+            };
+        }
+
+        async loadImage(input) {
+            if (input instanceof HTMLImageElement) {
+                return input;
+            }
+            if (input instanceof HTMLCanvasElement) {
+                const img = new Image();
+                img.src = input.toDataURL();
+                await new Promise((resolve) => { img.onload = resolve; });
+                return img;
+            }
+            
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = () => reject(new Error('Failed to load image'));
+                
+                if (typeof input === 'string') {
+                    img.src = input;
+                } else if (input instanceof File || input instanceof Blob) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => { img.src = e.target.result; };
+                    reader.onerror = () => reject(new Error('Failed to read file'));
+                    reader.readAsDataURL(input);
+                } else {
+                    reject(new Error('Invalid input type'));
+                }
+            });
+        }
+
+        async convertToBlob(canvas, format = 'png', quality = 0.9) {
+            return new Promise((resolve, reject) => {
+                canvas.toBlob(
+                    (blob) => blob ? resolve(blob) : reject(new Error('Failed to create blob')),
+                    `image/${format}`,
+                    quality
+                );
+            });
+        }
+    }
+
+    /**
      * Main EIIP Class - Elite India Image Processing
      * Combines all image processing capabilities
      */
@@ -2038,6 +2935,11 @@
             this.imageCropper = new ImageCropper(options);
             this.imageEffects = new ImageEffects(options);
             this.pdfConverter = new PDFConverter(options);
+            this.imageResizer = new ImageResizer(options);
+            this.imageRotator = new ImageRotator(options);
+            this.imageCompressor = new ImageCompressor(options);
+            this.textOverlay = new TextOverlay(options);
+            this.colorAdjuster = new ColorAdjuster(options);
             
             // Auto-inject knitting effects CSS
             SvgToRaster.injectKnittingCSS();
@@ -2048,6 +2950,11 @@
                 console.log('✂️  Image Cropper ready');
                 console.log('🎨 Image Effects ready');
                 console.log('📄 PDF Converter ready');
+                console.log('📏 Image Resizer ready');
+                console.log('🔄 Image Rotator ready');
+                console.log('🗜️  Image Compressor ready');
+                console.log('💬 Text Overlay ready');
+                console.log('🎨 Color Adjuster ready');
             }
         }
 
@@ -2133,6 +3040,61 @@
             return await converter.convertImagesToPDF(inputs, options);
         }
 
+        // Image resize methods
+        async resizeImage(input, options = {}) {
+            const resizer = new ImageResizer({ ...options, debug: this.debug });
+            return await resizer.resize(input, options);
+        }
+
+        async scaleImage(input, scaleFactor, options = {}) {
+            const resizer = new ImageResizer({ ...options, debug: this.debug });
+            return await resizer.scale(input, scaleFactor, options);
+        }
+
+        async createThumbnail(input, options = {}) {
+            const resizer = new ImageResizer({ ...options, debug: this.debug });
+            return await resizer.createThumbnail(input, options);
+        }
+
+        // Image rotation methods
+        async rotateImage(input, degrees, options = {}) {
+            const rotator = new ImageRotator({ ...options, debug: this.debug });
+            return await rotator.rotate(input, degrees, options);
+        }
+
+        async flipImage(input, direction = 'horizontal', options = {}) {
+            const rotator = new ImageRotator({ ...options, debug: this.debug });
+            return await rotator.flip(input, direction, options);
+        }
+
+        // Image compression methods
+        async compressImage(input, options = {}) {
+            const compressor = new ImageCompressor({ ...options, debug: this.debug });
+            return await compressor.compress(input, options);
+        }
+
+        async optimizeImage(input, options = {}) {
+            const compressor = new ImageCompressor({ ...options, debug: this.debug });
+            return await compressor.optimize(input, options);
+        }
+
+        // Text overlay methods
+        async addWatermark(input, options = {}) {
+            const overlay = new TextOverlay({ ...options, debug: this.debug });
+            return await overlay.addWatermark(input, options);
+        }
+
+        async addText(input, options = {}) {
+            const overlay = new TextOverlay({ ...options, debug: this.debug });
+            return await overlay.addText(input, options);
+        }
+
+        // Color adjustment methods
+        async adjustColors(input, options = {}) {
+            const adjuster = new ColorAdjuster({ ...options, debug: this.debug });
+            return await adjuster.adjustColors(input, options);
+        }
+
         // Utility methods
         downloadImage(dataUrl, filename) {
             const link = document.createElement('a');
@@ -2150,9 +3112,14 @@
         static ImageCropper = ImageCropper;
         static ImageEffects = ImageEffects;
         static PDFConverter = PDFConverter;
+        static ImageResizer = ImageResizer;
+        static ImageRotator = ImageRotator;
+        static ImageCompressor = ImageCompressor;
+        static TextOverlay = TextOverlay;
+        static ColorAdjuster = ColorAdjuster;
 
         // Version info
-        static version = '1.0.1';
+        static version = '1.2.0';
         static author = 'Saleem Ahmad (Elite India)';
     }
 

@@ -9,9 +9,14 @@ A comprehensive **client-side** image processing library that delivers lightweig
 - 🎨 **SVG to Raster Conversion** - Convert SVG graphics to PNG, JPG, WebP with knitting effects
 - 🖼️ **Raster to SVG Conversion** - Transform raster images to optimized SVG with color reduction
 - 🔧 **Advanced Layer Merging** - Combine multiple image layers with positioning, scaling, and effects
-- ✂️ **Image Cropping** - Crop to rectangle, circle, or aspect ratio (NEW!)
-- 🌈 **Image Effects & Filters** - 10+ predefined effects: grayscale, sepia, vintage, and more (NEW!)
-- 📄 **PDF Conversion** - Convert images to PDF directly in the browser (NEW!)
+- ✂️ **Image Cropping** - Crop to rectangle, circle, or aspect ratio
+- 🌈 **Image Effects & Filters** - 10+ predefined effects: grayscale, sepia, vintage, and more
+- 📄 **PDF Conversion** - Convert images to PDF directly in the browser
+- 📏 **Image Resize & Scale** - Smart resizing with quality preservation (NEW v1.2.0!)
+- 🔄 **Image Rotation & Flip** - Rotate and flip images (NEW v1.2.0!)
+- 🗜️ **Image Compression** - Smart compression and optimization (NEW v1.2.0!)
+- 💬 **Text Overlay & Watermark** - Add text and watermarks (NEW v1.2.0!)
+- 🎨 **Color Adjustment** - Advanced color manipulation (NEW v1.2.0!)
 
 **Client-first design** with zero server dependencies. Compatible with **React**, **Angular**, **Vue.js**, and **vanilla JavaScript**. Also works in Node.js environments for versatile deployment options.
 
@@ -40,27 +45,64 @@ A comprehensive **client-side** image processing library that delivers lightweig
 - DPI scaling for print-quality output
 - Background color and transparency support
 
-### Image Cropper (NEW!)
+### Image Cropper
 - Crop to specific rectangle area
 - Crop to perfect circle (ideal for avatars)
 - Crop to aspect ratio (Square, 16:9, 4:3, Instagram, Facebook cover, etc.)
 - Maintain image quality during cropping
 - Multiple input formats supported
 
-### Image Effects & Filters (NEW!)
+### Image Effects & Filters
 - **10+ Built-in Effects**: Grayscale, Sepia, Vintage, Blur, Sharpen, Invert
 - **Color Adjustments**: Brightness, Contrast, Warm, Cool
 - **Intensity Control**: Fine-tune effect strength (0.0 - 1.0)
 - **Chain Effects**: Apply multiple effects in sequence
 - **Real-time Processing**: Instant preview in browser
 
-### PDF Converter (NEW!)
+### PDF Converter
 - Convert single or multiple images to PDF
 - Multiple page sizes: A4, Letter, Legal, A3, A5, Tabloid
 - Portrait and landscape orientations
 - Customizable margins
 - Image fitting options: contain, cover, fill
 - Client-side PDF generation (no server required)
+
+### Image Resize & Scale (NEW v1.2.0!)
+- Resize to specific dimensions with quality preservation
+- Scale by percentage factor
+- Create thumbnails automatically
+- Multiple fit modes: contain, cover, fill
+- Smart aspect ratio handling
+- High-quality image smoothing
+
+### Image Rotation & Flip (NEW v1.2.0!)
+- Rotate by any angle (90°, 180°, 270°, custom)
+- Flip horizontally or vertically
+- Automatic canvas sizing
+- Maintains image quality
+
+### Image Compression (NEW v1.2.0!)
+- Compress to target file size (KB)
+- Smart compression with quality auto-adjustment
+- Multiple format support (WebP, JPEG, PNG)
+- Optimization for web delivery
+- Compression ratio reporting
+
+### Text Overlay & Watermark (NEW v1.2.0!)
+- Add watermark text with opacity control
+- Custom text overlay with positioning
+- Multiple position presets (corners, center)
+- Font customization (family, size, color)
+- Text effects (shadow, stroke, background)
+- Bold and italic styles
+
+### Color Adjustment (NEW v1.2.0!)
+- Saturation adjustment (0-2x)
+- Hue rotation (-180° to +180°)
+- Lightness control (-50 to +50)
+- Vibrance enhancement (0-2x)
+- HSL color space manipulation
+- Real-time color transformation
 
 ## 🏎️ Client-Side Processing Power
 

@@ -370,6 +370,103 @@
                 <p>Upload one or more images to create a PDF</p>
             </div>
         </div>
+
+        <!-- Image Resize & Scale Demo Section -->
+        <div class="demo-section">
+            <h2>📏 Image Resize & Scale <span style="background: #007bff; color: white; padding: 4px 12px; border-radius: 20px; font-size: 14px; margin-left: 10px;">v1.2.0</span></h2>
+            <div class="controls">
+                <input type="file" id="resizeFile" accept="image/*" onchange="handleResizeFileChange(event)">
+                <label>Width: <input type="number" id="resizeWidth" placeholder="800" style="width: 100px;"></label>
+                <label>Height: <input type="number" id="resizeHeight" placeholder="600" style="width: 100px;"></label>
+                <select id="fitMode">
+                    <option value="contain">Contain (fit inside)</option>
+                    <option value="cover">Cover (fill & crop)</option>
+                    <option value="fill">Fill (stretch)</option>
+                </select>
+                <button onclick="performResize()">Resize</button>
+                <label>Scale: <input type="number" id="scaleFactor" placeholder="0.5" step="0.1" min="0.1" max="5" style="width: 80px;"></label>
+                <button onclick="performScale()">Scale</button>
+                <button onclick="createThumb()">Create Thumbnail</button>
+            </div>
+            <div id="resizeResult" class="result-area">
+                <p>Upload an image to resize or scale</p>
+            </div>
+        </div>
+
+        <!-- Image Rotation & Flip Demo Section -->
+        <div class="demo-section" style="background: linear-gradient(to right, #fff, #f8f9fa);">
+            <h2>🔄 Image Rotation & Flip <span style="background: #007bff; color: white; padding: 4px 12px; border-radius: 20px; font-size: 14px; margin-left: 10px;">v1.2.0</span></h2>
+            <div class="controls">
+                <input type="file" id="rotateFile" accept="image/*" onchange="handleRotateFileChange(event)">
+                <button onclick="rotateImage(90)">Rotate 90°</button>
+                <button onclick="rotateImage(180)">Rotate 180°</button>
+                <button onclick="rotateImage(270)">Rotate 270°</button>
+                <button onclick="flipImage('horizontal')">Flip Horizontal</button>
+                <button onclick="flipImage('vertical')">Flip Vertical</button>
+            </div>
+            <div id="rotateResult" class="result-area">
+                <p>Upload an image to rotate or flip</p>
+            </div>
+        </div>
+
+        <!-- Image Compression Demo Section -->
+        <div class="demo-section">
+            <h2>🗜️ Image Compression <span style="background: #007bff; color: white; padding: 4px 12px; border-radius: 20px; font-size: 14px; margin-left: 10px;">v1.2.0</span></h2>
+            <div class="controls">
+                <input type="file" id="compressFile" accept="image/*" onchange="handleCompressFileChange(event)">
+                <label>Max Size: <input type="number" id="maxSizeKB" placeholder="500" style="width: 100px;"> KB</label>
+                <select id="compressFormat">
+                    <option value="webp">WebP (Best)</option>
+                    <option value="jpeg">JPEG</option>
+                    <option value="png">PNG</option>
+                </select>
+                <button onclick="performCompress()">Compress</button>
+                <button onclick="performOptimize()">Smart Optimize</button>
+            </div>
+            <div id="compressResult" class="result-area">
+                <p>Upload an image to compress</p>
+            </div>
+        </div>
+
+        <!-- Text Overlay & Watermark Demo Section -->
+        <div class="demo-section" style="background: linear-gradient(to right, #f8f9fa, #fff);">
+            <h2>💬 Text Overlay & Watermark <span style="background: #007bff; color: white; padding: 4px 12px; border-radius: 20px; font-size: 14px; margin-left: 10px;">v1.2.0</span></h2>
+            <div class="controls">
+                <input type="file" id="textFile" accept="image/*" onchange="handleTextFileChange(event)">
+                <input type="text" id="watermarkText" placeholder="© Your Watermark" style="min-width: 200px;">
+                <select id="watermarkPosition">
+                    <option value="bottom-right">Bottom Right</option>
+                    <option value="bottom-left">Bottom Left</option>
+                    <option value="top-right">Top Right</option>
+                    <option value="top-left">Top Left</option>
+                    <option value="center">Center</option>
+                </select>
+                <button onclick="addWatermarkToImage()">Add Watermark</button>
+                <input type="text" id="customText" placeholder="Custom Text" style="min-width: 150px;">
+                <input type="color" id="textColor" value="#000000">
+                <button onclick="addCustomText()">Add Text</button>
+            </div>
+            <div id="textResult" class="result-area">
+                <p>Upload an image to add text or watermark</p>
+            </div>
+        </div>
+
+        <!-- Color Adjustment Demo Section -->
+        <div class="demo-section">
+            <h2>🎨 Color Adjustment <span style="background: #007bff; color: white; padding: 4px 12px; border-radius: 20px; font-size: 14px; margin-left: 10px;">v1.2.0</span></h2>
+            <div class="controls">
+                <input type="file" id="colorFile" accept="image/*" onchange="handleColorFileChange(event)">
+                <label>Saturation: <input type="range" id="saturation" min="0" max="2" step="0.1" value="1"> <span id="satValue">1.0</span></label>
+                <label>Hue: <input type="range" id="hue" min="-180" max="180" step="1" value="0"> <span id="hueValue">0°</span></label>
+                <label>Lightness: <input type="range" id="lightness" min="-50" max="50" step="1" value="0"> <span id="lightValue">0</span></label>
+                <label>Vibrance: <input type="range" id="vibrance" min="0" max="2" step="0.1" value="1"> <span id="vibValue">1.0</span></label>
+                <button onclick="adjustImageColors()">Apply Adjustments</button>
+                <button onclick="resetColorControls()">Reset</button>
+            </div>
+            <div id="colorResult" class="result-area">
+                <p>Upload an image to adjust colors</p>
+            </div>
+        </div>
     </div>
 
     <!-- Include EIIP Library -->
@@ -1171,12 +1268,402 @@
             }
         }
 
+        // NEW FEATURES v1.2.0 - Image Resize Functions
+        let currentResizeFile = null;
+
+        function handleResizeFileChange(event) {
+            currentResizeFile = event.target.files[0];
+            if (currentResizeFile) {
+                document.getElementById('resizeResult').innerHTML = `<p>✓ Image loaded: ${currentResizeFile.name}</p>`;
+            }
+        }
+
+        async function performResize() {
+            if (!currentResizeFile) {
+                alert('Please select an image first!');
+                return;
+            }
+
+            const width = parseInt(document.getElementById('resizeWidth').value) || 800;
+            const height = parseInt(document.getElementById('resizeHeight').value) || 600;
+            const fit = document.getElementById('fitMode').value;
+            
+            showProcessing('resizeResult', 'Resizing image...');
+
+            try {
+                const result = await eiip.resizeImage(currentResizeFile, {
+                    width,
+                    height,
+                    fit,
+                    format: 'png',
+                    quality: 0.92
+                });
+                
+                const downloadBtn = `<button class="download-btn" onclick="eiip.downloadImage('${result.dataUrl}', 'resized-${currentResizeFile.name}')">Download Resized</button>`;
+                
+                showResult('resizeResult', `
+                    <img src="${result.dataUrl}" alt="Resized Image">
+                    ${downloadBtn}
+                `, `✅ Resized from ${result.originalWidth}x${result.originalHeight} to ${result.width}x${result.height} • Fit mode: ${fit}`);
+                
+            } catch (error) {
+                showError('resizeResult', error);
+            }
+        }
+
+        async function performScale() {
+            if (!currentResizeFile) {
+                alert('Please select an image first!');
+                return;
+            }
+
+            const scaleFactor = parseFloat(document.getElementById('scaleFactor').value) || 0.5;
+            
+            showProcessing('resizeResult', 'Scaling image...');
+
+            try {
+                const result = await eiip.scaleImage(currentResizeFile, scaleFactor, {
+                    format: 'png',
+                    quality: 0.92
+                });
+                
+                const downloadBtn = `<button class="download-btn" onclick="eiip.downloadImage('${result.dataUrl}', 'scaled-${currentResizeFile.name}')">Download Scaled</button>`;
+                
+                showResult('resizeResult', `
+                    <img src="${result.dataUrl}" alt="Scaled Image">
+                    ${downloadBtn}
+                `, `✅ Scaled by ${scaleFactor}x • New size: ${result.width}x${result.height}`);
+                
+            } catch (error) {
+                showError('resizeResult', error);
+            }
+        }
+
+        async function createThumb() {
+            if (!currentResizeFile) {
+                alert('Please select an image first!');
+                return;
+            }
+            
+            showProcessing('resizeResult', 'Creating thumbnail...');
+
+            try {
+                const result = await eiip.createThumbnail(currentResizeFile, {
+                    size: 150,
+                    format: 'webp',
+                    quality: 0.85
+                });
+                
+                const downloadBtn = `<button class="download-btn" onclick="eiip.downloadImage('${result.dataUrl}', 'thumb-${currentResizeFile.name}')">Download Thumbnail</button>`;
+                
+                showResult('resizeResult', `
+                    <img src="${result.dataUrl}" alt="Thumbnail">
+                    ${downloadBtn}
+                `, `✅ Thumbnail created • ${result.width}x${result.height} • WebP format`);
+                
+            } catch (error) {
+                showError('resizeResult', error);
+            }
+        }
+
+        // NEW FEATURES v1.2.0 - Image Rotation Functions
+        let currentRotateFile = null;
+
+        function handleRotateFileChange(event) {
+            currentRotateFile = event.target.files[0];
+            if (currentRotateFile) {
+                document.getElementById('rotateResult').innerHTML = `<p>✓ Image loaded: ${currentRotateFile.name}</p>`;
+            }
+        }
+
+        async function rotateImage(degrees) {
+            if (!currentRotateFile) {
+                alert('Please select an image first!');
+                return;
+            }
+            
+            showProcessing('rotateResult', `Rotating ${degrees}°...`);
+
+            try {
+                const result = await eiip.rotateImage(currentRotateFile, degrees, {
+                    format: 'png',
+                    quality: 0.92
+                });
+                
+                const downloadBtn = `<button class="download-btn" onclick="eiip.downloadImage('${result.dataUrl}', 'rotated-${degrees}-${currentRotateFile.name}')">Download Rotated</button>`;
+                
+                showResult('rotateResult', `
+                    <img src="${result.dataUrl}" alt="Rotated Image">
+                    ${downloadBtn}
+                `, `✅ Rotated ${degrees}° • New size: ${result.width}x${result.height}`);
+                
+            } catch (error) {
+                showError('rotateResult', error);
+            }
+        }
+
+        async function flipImage(direction) {
+            if (!currentRotateFile) {
+                alert('Please select an image first!');
+                return;
+            }
+            
+            showProcessing('rotateResult', `Flipping ${direction}...`);
+
+            try {
+                const result = await eiip.flipImage(currentRotateFile, direction, {
+                    format: 'png',
+                    quality: 0.92
+                });
+                
+                const downloadBtn = `<button class="download-btn" onclick="eiip.downloadImage('${result.dataUrl}', 'flipped-${direction}-${currentRotateFile.name}')">Download Flipped</button>`;
+                
+                showResult('rotateResult', `
+                    <img src="${result.dataUrl}" alt="Flipped Image">
+                    ${downloadBtn}
+                `, `✅ Flipped ${direction} • ${result.width}x${result.height}`);
+                
+            } catch (error) {
+                showError('rotateResult', error);
+            }
+        }
+
+        // NEW FEATURES v1.2.0 - Image Compression Functions
+        let currentCompressFile = null;
+
+        function handleCompressFileChange(event) {
+            currentCompressFile = event.target.files[0];
+            if (currentCompressFile) {
+                const sizeKB = (currentCompressFile.size / 1024).toFixed(2);
+                document.getElementById('compressResult').innerHTML = `<p>✓ Image loaded: ${currentCompressFile.name} (${sizeKB} KB)</p>`;
+            }
+        }
+
+        async function performCompress() {
+            if (!currentCompressFile) {
+                alert('Please select an image first!');
+                return;
+            }
+
+            const maxSizeKB = parseInt(document.getElementById('maxSizeKB').value) || 500;
+            const format = document.getElementById('compressFormat').value;
+            
+            showProcessing('compressResult', 'Compressing image...');
+
+            try {
+                const result = await eiip.compressImage(currentCompressFile, {
+                    maxSizeKB,
+                    format,
+                    quality: 0.9
+                });
+                
+                const originalKB = (currentCompressFile.size / 1024).toFixed(2);
+                const savings = ((1 - result.sizeKB / originalKB) * 100).toFixed(1);
+                
+                const downloadBtn = `<button class="download-btn" onclick="eiip.downloadImage('${result.dataUrl}', 'compressed-${currentCompressFile.name}')">Download Compressed</button>`;
+                
+                showResult('compressResult', `
+                    <img src="${result.dataUrl}" alt="Compressed Image">
+                    ${downloadBtn}
+                `, `✅ Compressed from ${originalKB} KB to ${result.sizeKB} KB • ${savings}% smaller • Quality: ${(result.quality * 100).toFixed(0)}%`);
+                
+            } catch (error) {
+                showError('compressResult', error);
+            }
+        }
+
+        async function performOptimize() {
+            if (!currentCompressFile) {
+                alert('Please select an image first!');
+                return;
+            }
+            
+            showProcessing('compressResult', 'Optimizing image...');
+
+            try {
+                const result = await eiip.optimizeImage(currentCompressFile, {
+                    maxSizeKB: 800,
+                    maxWidth: 1920,
+                    maxHeight: 1080,
+                    format: 'webp',
+                    quality: 0.85
+                });
+                
+                const originalKB = (currentCompressFile.size / 1024).toFixed(2);
+                const savings = ((1 - result.sizeKB / originalKB) * 100).toFixed(1);
+                
+                const downloadBtn = `<button class="download-btn" onclick="eiip.downloadImage('${result.dataUrl}', 'optimized-${currentCompressFile.name}')">Download Optimized</button>`;
+                
+                showResult('compressResult', `
+                    <img src="${result.dataUrl}" alt="Optimized Image">
+                    ${downloadBtn}
+                `, `✅ Smart optimization • ${originalKB} KB → ${result.sizeKB} KB (${savings}% smaller) • WebP format • ${result.width}x${result.height}`);
+                
+            } catch (error) {
+                showError('compressResult', error);
+            }
+        }
+
+        // NEW FEATURES v1.2.0 - Text Overlay Functions
+        let currentTextFile = null;
+
+        function handleTextFileChange(event) {
+            currentTextFile = event.target.files[0];
+            if (currentTextFile) {
+                document.getElementById('textResult').innerHTML = `<p>✓ Image loaded: ${currentTextFile.name}</p>`;
+            }
+        }
+
+        async function addWatermarkToImage() {
+            if (!currentTextFile) {
+                alert('Please select an image first!');
+                return;
+            }
+
+            const text = document.getElementById('watermarkText').value || '© Watermark';
+            const position = document.getElementById('watermarkPosition').value;
+            
+            showProcessing('textResult', 'Adding watermark...');
+
+            try {
+                const result = await eiip.addWatermark(currentTextFile, {
+                    text,
+                    position,
+                    opacity: 0.7,
+                    color: '#ffffff',
+                    shadow: true,
+                    format: 'png',
+                    quality: 0.95
+                });
+                
+                const downloadBtn = `<button class="download-btn" onclick="eiip.downloadImage('${result.dataUrl}', 'watermarked-${currentTextFile.name}')">Download Watermarked</button>`;
+                
+                showResult('textResult', `
+                    <img src="${result.dataUrl}" alt="Watermarked Image">
+                    ${downloadBtn}
+                `, `✅ Watermark added: "${text}" • Position: ${position}`);
+                
+            } catch (error) {
+                showError('textResult', error);
+            }
+        }
+
+        async function addCustomText() {
+            if (!currentTextFile) {
+                alert('Please select an image first!');
+                return;
+            }
+
+            const text = document.getElementById('customText').value || 'Custom Text';
+            const color = document.getElementById('textColor').value;
+            
+            showProcessing('textResult', 'Adding text...');
+
+            try {
+                const result = await eiip.addText(currentTextFile, {
+                    text,
+                    fontSize: 60,
+                    color,
+                    x: 'center',
+                    y: 'center',
+                    bold: true,
+                    shadow: true,
+                    shadowColor: 'rgba(0,0,0,0.7)',
+                    format: 'png',
+                    quality: 0.95
+                });
+                
+                const downloadBtn = `<button class="download-btn" onclick="eiip.downloadImage('${result.dataUrl}', 'text-overlay-${currentTextFile.name}')">Download Text Overlay</button>`;
+                
+                showResult('textResult', `
+                    <img src="${result.dataUrl}" alt="Text Overlay Image">
+                    ${downloadBtn}
+                `, `✅ Text added: "${text}" • Color: ${color} • Center position`);
+                
+            } catch (error) {
+                showError('textResult', error);
+            }
+        }
+
+        // NEW FEATURES v1.2.0 - Color Adjustment Functions
+        let currentColorFile = null;
+
+        function handleColorFileChange(event) {
+            currentColorFile = event.target.files[0];
+            if (currentColorFile) {
+                document.getElementById('colorResult').innerHTML = `<p>✓ Image loaded: ${currentColorFile.name}</p>`;
+            }
+        }
+
+        // Update slider value displays
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('saturation')?.addEventListener('input', (e) => {
+                document.getElementById('satValue').textContent = parseFloat(e.target.value).toFixed(1);
+            });
+            document.getElementById('hue')?.addEventListener('input', (e) => {
+                document.getElementById('hueValue').textContent = e.target.value + '°';
+            });
+            document.getElementById('lightness')?.addEventListener('input', (e) => {
+                document.getElementById('lightValue').textContent = e.target.value;
+            });
+            document.getElementById('vibrance')?.addEventListener('input', (e) => {
+                document.getElementById('vibValue').textContent = parseFloat(e.target.value).toFixed(1);
+            });
+        });
+
+        function resetColorControls() {
+            document.getElementById('saturation').value = 1;
+            document.getElementById('hue').value = 0;
+            document.getElementById('lightness').value = 0;
+            document.getElementById('vibrance').value = 1;
+            document.getElementById('satValue').textContent = '1.0';
+            document.getElementById('hueValue').textContent = '0°';
+            document.getElementById('lightValue').textContent = '0';
+            document.getElementById('vibValue').textContent = '1.0';
+        }
+
+        async function adjustImageColors() {
+            if (!currentColorFile) {
+                alert('Please select an image first!');
+                return;
+            }
+
+            const saturation = parseFloat(document.getElementById('saturation').value);
+            const hue = parseFloat(document.getElementById('hue').value);
+            const lightness = parseFloat(document.getElementById('lightness').value);
+            const vibrance = parseFloat(document.getElementById('vibrance').value);
+            
+            showProcessing('colorResult', 'Adjusting colors...');
+
+            try {
+                const result = await eiip.adjustColors(currentColorFile, {
+                    saturation,
+                    hue,
+                    lightness,
+                    vibrance,
+                    format: 'png',
+                    quality: 0.92
+                });
+                
+                const downloadBtn = `<button class="download-btn" onclick="eiip.downloadImage('${result.dataUrl}', 'color-adjusted-${currentColorFile.name}')">Download Adjusted</button>`;
+                
+                showResult('colorResult', `
+                    <img src="${result.dataUrl}" alt="Color Adjusted Image">
+                    ${downloadBtn}
+                `, `✅ Colors adjusted • Saturation: ${saturation}x • Hue: ${hue}° • Lightness: ${lightness} • Vibrance: ${vibrance}x`);
+                
+            } catch (error) {
+                showError('colorResult', error);
+            }
+        }
+
         // Initialize demo on page load
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🎨 EIIP Demo loaded successfully!');
             console.log('📚 Library version:', EIIP.version);
             console.log('👨‍💻 Author:', EIIP.author);
-            console.log('✨ New Features: Image Cropper, Image Effects, PDF Converter');
+            console.log('✨ v1.1.0 Features: Image Cropper, Image Effects, PDF Converter');
+            console.log('✨ v1.2.0 Features: Image Resize, Rotation, Compression, Text Overlay, Color Adjustment');
         });
     </script>
 </body>
