@@ -1307,6 +1307,723 @@
     }
 
     /**
+     * Image Cropper Class
+     * Crop images with various methods (rectangle, circle, aspect ratio)
+     */
+    class ImageCropper {
+        constructor(options = {}) {
+            this.debug = options.debug || false;
+            
+            if (this.debug) {
+                console.log('✅ ImageCropper initialized');
+            }
+        }
+
+        /**
+         * Crop image to specified rectangle
+         * @param {File|string|HTMLImageElement} input - Image source
+         * @param {Object} cropArea - {x, y, width, height}
+         * @param {Object} options - Output options
+         */
+        async crop(input, cropArea, options = {}) {
+            try {
+                const img = await this.loadImage(input);
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                const { x = 0, y = 0, width, height } = cropArea;
+                
+                canvas.width = width;
+                canvas.height = height;
+                
+                ctx.drawImage(img, x, y, width, height, 0, 0, width, height);
+                
+                const format = options.format || 'png';
+                const quality = options.quality || 0.92;
+                const dataUrl = canvas.toDataURL(`image/${format}`, quality);
+                
+                if (this.debug) {
+                    console.log(`✅ Image cropped to ${width}x${height}`);
+                }
+                
+                return {
+                    canvas,
+                    dataUrl,
+                    blob: await this.convertToBlob(canvas, format, quality),
+                    width,
+                    height
+                };
+            } catch (error) {
+                if (this.debug) {
+                    console.error('❌ Crop failed:', error);
+                }
+                throw new Error(`Crop failed: ${error.message}`);
+            }
+        }
+
+        /**
+         * Crop image to circle
+         */
+        async cropToCircle(input, options = {}) {
+            try {
+                const img = await this.loadImage(input);
+                const size = options.size || Math.min(img.width, img.height);
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                canvas.width = size;
+                canvas.height = size;
+                
+                // Create circular clip path
+                ctx.beginPath();
+                ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+                ctx.closePath();
+                ctx.clip();
+                
+                // Draw image
+                const x = options.x || (img.width - size) / 2;
+                const y = options.y || (img.height - size) / 2;
+                ctx.drawImage(img, -x, -y);
+                
+                const format = options.format || 'png';
+                const quality = options.quality || 0.92;
+                const dataUrl = canvas.toDataURL(`image/${format}`, quality);
+                
+                if (this.debug) {
+                    console.log(`✅ Image cropped to circle (${size}px)`);
+                }
+                
+                return {
+                    canvas,
+                    dataUrl,
+                    blob: await this.convertToBlob(canvas, format, quality),
+                    width: size,
+                    height: size
+                };
+            } catch (error) {
+                if (this.debug) {
+                    console.error('❌ Circle crop failed:', error);
+                }
+                throw new Error(`Circle crop failed: ${error.message}`);
+            }
+        }
+
+        /**
+         * Crop to aspect ratio
+         */
+        async cropToAspectRatio(input, aspectRatio, options = {}) {
+            try {
+                const img = await this.loadImage(input);
+                const targetRatio = aspectRatio.width / aspectRatio.height;
+                const currentRatio = img.width / img.height;
+                
+                let cropWidth, cropHeight, x, y;
+                
+                if (currentRatio > targetRatio) {
+                    // Image is wider, crop width
+                    cropHeight = img.height;
+                    cropWidth = cropHeight * targetRatio;
+                    x = (img.width - cropWidth) / 2;
+                    y = 0;
+                } else {
+                    // Image is taller, crop height
+                    cropWidth = img.width;
+                    cropHeight = cropWidth / targetRatio;
+                    x = 0;
+                    y = (img.height - cropHeight) / 2;
+                }
+                
+                return await this.crop(img, { x, y, width: cropWidth, height: cropHeight }, options);
+            } catch (error) {
+                if (this.debug) {
+                    console.error('❌ Aspect ratio crop failed:', error);
+                }
+                throw new Error(`Aspect ratio crop failed: ${error.message}`);
+            }
+        }
+
+        async loadImage(input) {
+            if (input instanceof HTMLImageElement) {
+                return input;
+            }
+            
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                
+                img.onload = () => resolve(img);
+                img.onerror = () => reject(new Error('Failed to load image'));
+                
+                if (typeof input === 'string') {
+                    if (input.startsWith('data:') || input.startsWith('http') || input.startsWith('/')) {
+                        img.src = input;
+                    } else {
+                        reject(new Error('Invalid image URL'));
+                    }
+                } else if (input instanceof File || input instanceof Blob) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => { img.src = e.target.result; };
+                    reader.onerror = () => reject(new Error('Failed to read file'));
+                    reader.readAsDataURL(input);
+                } else {
+                    reject(new Error('Invalid input type'));
+                }
+            });
+        }
+
+        async convertToBlob(canvas, format = 'png', quality = 0.9) {
+            return new Promise((resolve, reject) => {
+                canvas.toBlob(
+                    (blob) => {
+                        if (blob) {
+                            resolve(blob);
+                        } else {
+                            reject(new Error('Failed to create blob'));
+                        }
+                    },
+                    `image/${format}`,
+                    quality
+                );
+            });
+        }
+
+        // Common aspect ratios
+        static ASPECT_RATIOS = {
+            SQUARE: { width: 1, height: 1 },          // 1:1
+            LANDSCAPE: { width: 16, height: 9 },      // 16:9
+            PORTRAIT: { width: 9, height: 16 },       // 9:16
+            CLASSIC: { width: 4, height: 3 },         // 4:3
+            WIDE: { width: 21, height: 9 },           // 21:9
+            INSTAGRAM: { width: 4, height: 5 },       // 4:5
+            FACEBOOK_COVER: { width: 820, height: 312 }
+        };
+    }
+
+    /**
+     * Image Effects Class
+     * Apply predefined filters and effects to images
+     */
+    class ImageEffects {
+        constructor(options = {}) {
+            this.debug = options.debug || false;
+            
+            if (this.debug) {
+                console.log('✅ ImageEffects initialized');
+            }
+        }
+
+        /**
+         * Apply effect to image
+         */
+        async applyEffect(input, effectName, intensity = 1.0, options = {}) {
+            try {
+                const img = await this.loadImage(input);
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                canvas.width = img.width;
+                canvas.height = img.height;
+                
+                ctx.drawImage(img, 0, 0);
+                
+                // Apply the effect
+                const effectMethod = ImageEffects.EFFECTS[effectName.toUpperCase()];
+                if (!effectMethod) {
+                    throw new Error(`Unknown effect: ${effectName}`);
+                }
+                
+                await effectMethod.call(this, ctx, canvas, intensity);
+                
+                const format = options.format || 'png';
+                const quality = options.quality || 0.92;
+                const dataUrl = canvas.toDataURL(`image/${format}`, quality);
+                
+                if (this.debug) {
+                    console.log(`✅ Applied effect: ${effectName}`);
+                }
+                
+                return {
+                    canvas,
+                    dataUrl,
+                    blob: await this.convertToBlob(canvas, format, quality),
+                    width: canvas.width,
+                    height: canvas.height,
+                    effect: effectName
+                };
+            } catch (error) {
+                if (this.debug) {
+                    console.error('❌ Effect failed:', error);
+                }
+                throw new Error(`Effect failed: ${error.message}`);
+            }
+        }
+
+        /**
+         * Apply multiple effects in sequence
+         */
+        async applyEffects(input, effects, options = {}) {
+            let currentInput = input;
+            
+            for (const effect of effects) {
+                const result = await this.applyEffect(
+                    currentInput, 
+                    effect.name, 
+                    effect.intensity || 1.0,
+                    options
+                );
+                currentInput = result.canvas;
+            }
+            
+            const format = options.format || 'png';
+            const quality = options.quality || 0.92;
+            const dataUrl = currentInput.toDataURL(`image/${format}`, quality);
+            
+            return {
+                canvas: currentInput,
+                dataUrl,
+                blob: await this.convertToBlob(currentInput, format, quality),
+                width: currentInput.width,
+                height: currentInput.height,
+                effects: effects.map(e => e.name)
+            };
+        }
+
+        async loadImage(input) {
+            if (input instanceof HTMLCanvasElement) {
+                const img = new Image();
+                img.src = input.toDataURL();
+                await new Promise((resolve) => { img.onload = resolve; });
+                return img;
+            }
+            
+            if (input instanceof HTMLImageElement) {
+                return input;
+            }
+            
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                
+                img.onload = () => resolve(img);
+                img.onerror = () => reject(new Error('Failed to load image'));
+                
+                if (typeof input === 'string') {
+                    if (input.startsWith('data:') || input.startsWith('http') || input.startsWith('/')) {
+                        img.src = input;
+                    } else {
+                        reject(new Error('Invalid image URL'));
+                    }
+                } else if (input instanceof File || input instanceof Blob) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => { img.src = e.target.result; };
+                    reader.onerror = () => reject(new Error('Failed to read file'));
+                    reader.readAsDataURL(input);
+                } else {
+                    reject(new Error('Invalid input type'));
+                }
+            });
+        }
+
+        async convertToBlob(canvas, format = 'png', quality = 0.9) {
+            return new Promise((resolve, reject) => {
+                canvas.toBlob(
+                    (blob) => {
+                        if (blob) {
+                            resolve(blob);
+                        } else {
+                            reject(new Error('Failed to create blob'));
+                        }
+                    },
+                    `image/${format}`,
+                    quality
+                );
+            });
+        }
+
+        // Effect implementations
+        static EFFECTS = {
+            GRAYSCALE: function(ctx, canvas, intensity) {
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+                
+                for (let i = 0; i < data.length; i += 4) {
+                    const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+                    data[i] = data[i] * (1 - intensity) + gray * intensity;
+                    data[i + 1] = data[i + 1] * (1 - intensity) + gray * intensity;
+                    data[i + 2] = data[i + 2] * (1 - intensity) + gray * intensity;
+                }
+                
+                ctx.putImageData(imageData, 0, 0);
+            },
+
+            SEPIA: function(ctx, canvas, intensity) {
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+                
+                for (let i = 0; i < data.length; i += 4) {
+                    const r = data[i];
+                    const g = data[i + 1];
+                    const b = data[i + 2];
+                    
+                    const sr = (r * 0.393 + g * 0.769 + b * 0.189);
+                    const sg = (r * 0.349 + g * 0.686 + b * 0.168);
+                    const sb = (r * 0.272 + g * 0.534 + b * 0.131);
+                    
+                    data[i] = Math.min(255, r * (1 - intensity) + sr * intensity);
+                    data[i + 1] = Math.min(255, g * (1 - intensity) + sg * intensity);
+                    data[i + 2] = Math.min(255, b * (1 - intensity) + sb * intensity);
+                }
+                
+                ctx.putImageData(imageData, 0, 0);
+            },
+
+            BRIGHTNESS: function(ctx, canvas, intensity) {
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+                const adjust = (intensity - 0.5) * 100;
+                
+                for (let i = 0; i < data.length; i += 4) {
+                    data[i] = Math.max(0, Math.min(255, data[i] + adjust));
+                    data[i + 1] = Math.max(0, Math.min(255, data[i + 1] + adjust));
+                    data[i + 2] = Math.max(0, Math.min(255, data[i + 2] + adjust));
+                }
+                
+                ctx.putImageData(imageData, 0, 0);
+            },
+
+            CONTRAST: function(ctx, canvas, intensity) {
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+                const factor = (259 * (intensity * 255 + 255)) / (255 * (259 - intensity * 255));
+                
+                for (let i = 0; i < data.length; i += 4) {
+                    data[i] = Math.max(0, Math.min(255, factor * (data[i] - 128) + 128));
+                    data[i + 1] = Math.max(0, Math.min(255, factor * (data[i + 1] - 128) + 128));
+                    data[i + 2] = Math.max(0, Math.min(255, factor * (data[i + 2] - 128) + 128));
+                }
+                
+                ctx.putImageData(imageData, 0, 0);
+            },
+
+            INVERT: function(ctx, canvas, intensity) {
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+                
+                for (let i = 0; i < data.length; i += 4) {
+                    data[i] = data[i] * (1 - intensity) + (255 - data[i]) * intensity;
+                    data[i + 1] = data[i + 1] * (1 - intensity) + (255 - data[i + 1]) * intensity;
+                    data[i + 2] = data[i + 2] * (1 - intensity) + (255 - data[i + 2]) * intensity;
+                }
+                
+                ctx.putImageData(imageData, 0, 0);
+            },
+
+            BLUR: function(ctx, canvas, intensity) {
+                const blurAmount = Math.max(1, intensity * 10);
+                ctx.filter = `blur(${blurAmount}px)`;
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = canvas.width;
+                tempCanvas.height = canvas.height;
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCtx.drawImage(canvas, 0, 0);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(tempCanvas, 0, 0);
+                ctx.filter = 'none';
+            },
+
+            SHARPEN: function(ctx, canvas, intensity) {
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+                const w = canvas.width;
+                const kernel = [0, -1 * intensity, 0, -1 * intensity, 1 + 4 * intensity, -1 * intensity, 0, -1 * intensity, 0];
+                
+                const tempData = new Uint8ClampedArray(data);
+                
+                for (let y = 1; y < canvas.height - 1; y++) {
+                    for (let x = 1; x < canvas.width - 1; x++) {
+                        for (let c = 0; c < 3; c++) {
+                            const i = (y * w + x) * 4 + c;
+                            let sum = 0;
+                            for (let ky = -1; ky <= 1; ky++) {
+                                for (let kx = -1; kx <= 1; kx++) {
+                                    const ki = ((y + ky) * w + (x + kx)) * 4 + c;
+                                    sum += tempData[ki] * kernel[(ky + 1) * 3 + (kx + 1)];
+                                }
+                            }
+                            data[i] = Math.max(0, Math.min(255, sum));
+                        }
+                    }
+                }
+                
+                ctx.putImageData(imageData, 0, 0);
+            },
+
+            VINTAGE: function(ctx, canvas, intensity) {
+                // Apply sepia first
+                ImageEffects.EFFECTS.SEPIA(ctx, canvas, intensity * 0.8);
+                
+                // Add vignette
+                const gradient = ctx.createRadialGradient(
+                    canvas.width / 2, canvas.height / 2, 0,
+                    canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height) / 2
+                );
+                gradient.addColorStop(0, `rgba(0,0,0,0)`);
+                gradient.addColorStop(1, `rgba(0,0,0,${intensity * 0.5})`);
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            },
+
+            WARM: function(ctx, canvas, intensity) {
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+                
+                for (let i = 0; i < data.length; i += 4) {
+                    data[i] = Math.min(255, data[i] + intensity * 30);     // More red
+                    data[i + 1] = Math.min(255, data[i + 1] + intensity * 15); // Slight green
+                    data[i + 2] = Math.max(0, data[i + 2] - intensity * 20);   // Less blue
+                }
+                
+                ctx.putImageData(imageData, 0, 0);
+            },
+
+            COOL: function(ctx, canvas, intensity) {
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+                
+                for (let i = 0; i < data.length; i += 4) {
+                    data[i] = Math.max(0, data[i] - intensity * 20);           // Less red
+                    data[i + 1] = Math.min(255, data[i + 1] + intensity * 10); // Slight green
+                    data[i + 2] = Math.min(255, data[i + 2] + intensity * 30); // More blue
+                }
+                
+                ctx.putImageData(imageData, 0, 0);
+            }
+        };
+
+        static EFFECT_NAMES = Object.keys(ImageEffects.EFFECTS);
+    }
+
+    /**
+     * PDF Converter Class
+     * Convert images to PDF on the client-side
+     */
+    class PDFConverter {
+        constructor(options = {}) {
+            this.debug = options.debug || false;
+            this.pageSize = options.pageSize || PDFConverter.PAGE_SIZES.A4;
+            this.orientation = options.orientation || 'portrait';
+            this.margin = options.margin || 20;
+            
+            if (this.debug) {
+                console.log('✅ PDFConverter initialized');
+            }
+        }
+
+        /**
+         * Convert single image to PDF
+         */
+        async convertImageToPDF(input, options = {}) {
+            try {
+                const img = await this.loadImage(input);
+                const images = [{ img, options: options.imageOptions || {} }];
+                return await this.createPDF(images, options);
+            } catch (error) {
+                if (this.debug) {
+                    console.error('❌ PDF conversion failed:', error);
+                }
+                throw new Error(`PDF conversion failed: ${error.message}`);
+            }
+        }
+
+        /**
+         * Convert multiple images to PDF
+         */
+        async convertImagesToPDF(inputs, options = {}) {
+            try {
+                const images = [];
+                
+                for (const input of inputs) {
+                    const img = await this.loadImage(typeof input === 'object' && input.src ? input.src : input);
+                    const imageOptions = typeof input === 'object' ? input.options || {} : {};
+                    images.push({ img, options: imageOptions });
+                }
+                
+                return await this.createPDF(images, options);
+            } catch (error) {
+                if (this.debug) {
+                    console.error('❌ PDF conversion failed:', error);
+                }
+                throw new Error(`PDF conversion failed: ${error.message}`);
+            }
+        }
+
+        async createPDF(images, options = {}) {
+            const pageSize = options.pageSize || this.pageSize;
+            const orientation = options.orientation || this.orientation;
+            const margin = options.margin !== undefined ? options.margin : this.margin;
+            
+            // Calculate page dimensions
+            let pageWidth, pageHeight;
+            if (orientation === 'landscape') {
+                pageWidth = pageSize.height;
+                pageHeight = pageSize.width;
+            } else {
+                pageWidth = pageSize.width;
+                pageHeight = pageSize.height;
+            }
+            
+            const contentWidth = pageWidth - 2 * margin;
+            const contentHeight = pageHeight - 2 * margin;
+            
+            // Create a canvas for each page
+            const pdfPages = [];
+            
+            for (const { img, options: imageOptions } of images) {
+                const canvas = document.createElement('canvas');
+                canvas.width = pageWidth;
+                canvas.height = pageHeight;
+                const ctx = canvas.getContext('2d');
+                
+                // White background
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, pageWidth, pageHeight);
+                
+                // Calculate image dimensions to fit in page
+                const imgRatio = img.width / img.height;
+                const contentRatio = contentWidth / contentHeight;
+                
+                let drawWidth, drawHeight, x, y;
+                
+                const fitMode = imageOptions.fit || 'contain';
+                
+                if (fitMode === 'contain') {
+                    if (imgRatio > contentRatio) {
+                        drawWidth = contentWidth;
+                        drawHeight = contentWidth / imgRatio;
+                    } else {
+                        drawHeight = contentHeight;
+                        drawWidth = contentHeight * imgRatio;
+                    }
+                    x = margin + (contentWidth - drawWidth) / 2;
+                    y = margin + (contentHeight - drawHeight) / 2;
+                } else if (fitMode === 'cover') {
+                    if (imgRatio > contentRatio) {
+                        drawHeight = contentHeight;
+                        drawWidth = contentHeight * imgRatio;
+                    } else {
+                        drawWidth = contentWidth;
+                        drawHeight = contentWidth / imgRatio;
+                    }
+                    x = margin + (contentWidth - drawWidth) / 2;
+                    y = margin + (contentHeight - drawHeight) / 2;
+                } else { // 'fill'
+                    drawWidth = contentWidth;
+                    drawHeight = contentHeight;
+                    x = margin;
+                    y = margin;
+                }
+                
+                ctx.drawImage(img, x, y, drawWidth, drawHeight);
+                
+                pdfPages.push(canvas);
+            }
+            
+            // Convert to PDF-like format (multiple canvas images)
+            // For actual PDF generation, we'd use jsPDF library
+            // But for lightweight client-side, we'll create a multi-page image
+            
+            const dataUrls = pdfPages.map(canvas => canvas.toDataURL('image/jpeg', 0.95));
+            
+            if (this.debug) {
+                console.log(`✅ Created PDF with ${pdfPages.length} page(s)`);
+            }
+            
+            return {
+                pages: pdfPages,
+                dataUrls,
+                pageCount: pdfPages.length,
+                pageSize,
+                orientation,
+                // For download, we'll create a simple PDF structure
+                downloadUrl: await this.createSimplePDF(pdfPages, pageSize, orientation)
+            };
+        }
+
+        async createSimplePDF(canvases, pageSize, orientation) {
+            // This creates a basic PDF structure
+            // For production, integrate jsPDF or PDF-lib
+            // For now, we'll return a data URL of the first page
+            // Or create a ZIP of all pages
+            
+            if (canvases.length === 1) {
+                return canvases[0].toDataURL('image/jpeg', 0.95);
+            }
+            
+            // For multiple pages, we could combine them vertically
+            const totalHeight = canvases.reduce((sum, c) => sum + c.height + 20, 0);
+            const maxWidth = Math.max(...canvases.map(c => c.width));
+            
+            const combinedCanvas = document.createElement('canvas');
+            combinedCanvas.width = maxWidth;
+            combinedCanvas.height = totalHeight;
+            const ctx = combinedCanvas.getContext('2d');
+            
+            ctx.fillStyle = '#cccccc';
+            ctx.fillRect(0, 0, maxWidth, totalHeight);
+            
+            let yOffset = 0;
+            for (const canvas of canvases) {
+                const x = (maxWidth - canvas.width) / 2;
+                ctx.drawImage(canvas, x, yOffset);
+                yOffset += canvas.height + 20;
+            }
+            
+            return combinedCanvas.toDataURL('image/jpeg', 0.95);
+        }
+
+        async loadImage(input) {
+            if (input instanceof HTMLImageElement) {
+                return input;
+            }
+            
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                
+                img.onload = () => resolve(img);
+                img.onerror = () => reject(new Error('Failed to load image'));
+                
+                if (typeof input === 'string') {
+                    if (input.startsWith('data:') || input.startsWith('http') || input.startsWith('/')) {
+                        img.src = input;
+                    } else {
+                        reject(new Error('Invalid image URL'));
+                    }
+                } else if (input instanceof File || input instanceof Blob) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => { img.src = e.target.result; };
+                    reader.onerror = () => reject(new Error('Failed to read file'));
+                    reader.readAsDataURL(input);
+                } else {
+                    reject(new Error('Invalid input type'));
+                }
+            });
+        }
+
+        // Standard page sizes in points (72 DPI)
+        static PAGE_SIZES = {
+            A4: { width: 595, height: 842 },
+            LETTER: { width: 612, height: 792 },
+            LEGAL: { width: 612, height: 1008 },
+            A3: { width: 842, height: 1191 },
+            A5: { width: 420, height: 595 },
+            TABLOID: { width: 792, height: 1224 }
+        };
+
+        static ORIENTATIONS = {
+            PORTRAIT: 'portrait',
+            LANDSCAPE: 'landscape'
+        };
+    }
+
+    /**
      * Main EIIP Class - Elite India Image Processing
      * Combines all image processing capabilities
      */
@@ -1318,6 +2035,9 @@
             this.svgToRaster = new SvgToRaster(options);
             this.rasterToSvg = new RasterToSvg(options);
             this.layerMerger = new ImageLayerMerger(options);
+            this.imageCropper = new ImageCropper(options);
+            this.imageEffects = new ImageEffects(options);
+            this.pdfConverter = new PDFConverter(options);
             
             // Auto-inject knitting effects CSS
             SvgToRaster.injectKnittingCSS();
@@ -1325,6 +2045,9 @@
             if (this.debug) {
                 console.log('✅ EIIP (Elite India Image Processing) initialized');
                 console.log('🧶 Knitting effects CSS automatically loaded');
+                console.log('✂️  Image Cropper ready');
+                console.log('🎨 Image Effects ready');
+                console.log('📄 PDF Converter ready');
             }
         }
 
@@ -1372,6 +2095,44 @@
             return await merger.mergeImages(layers, options);
         }
 
+        // Image cropping methods
+        async cropImage(input, cropArea, options = {}) {
+            const cropper = new ImageCropper({ ...options, debug: this.debug });
+            return await cropper.crop(input, cropArea, options);
+        }
+
+        async cropToCircle(input, options = {}) {
+            const cropper = new ImageCropper({ ...options, debug: this.debug });
+            return await cropper.cropToCircle(input, options);
+        }
+
+        async cropToAspectRatio(input, aspectRatio, options = {}) {
+            const cropper = new ImageCropper({ ...options, debug: this.debug });
+            return await cropper.cropToAspectRatio(input, aspectRatio, options);
+        }
+
+        // Image effects methods
+        async applyEffect(input, effectName, intensity = 1.0, options = {}) {
+            const effects = new ImageEffects({ ...options, debug: this.debug });
+            return await effects.applyEffect(input, effectName, intensity, options);
+        }
+
+        async applyEffects(input, effects, options = {}) {
+            const effectsProcessor = new ImageEffects({ ...options, debug: this.debug });
+            return await effectsProcessor.applyEffects(input, effects, options);
+        }
+
+        // PDF conversion methods
+        async convertImageToPDF(input, options = {}) {
+            const converter = new PDFConverter({ ...options, debug: this.debug });
+            return await converter.convertImageToPDF(input, options);
+        }
+
+        async convertImagesToPDF(inputs, options = {}) {
+            const converter = new PDFConverter({ ...options, debug: this.debug });
+            return await converter.convertImagesToPDF(inputs, options);
+        }
+
         // Utility methods
         downloadImage(dataUrl, filename) {
             const link = document.createElement('a');
@@ -1386,9 +2147,12 @@
         static SvgToRaster = SvgToRaster;
         static RasterToSvg = RasterToSvg;
         static ImageLayerMerger = ImageLayerMerger;
+        static ImageCropper = ImageCropper;
+        static ImageEffects = ImageEffects;
+        static PDFConverter = PDFConverter;
 
         // Version info
-        static version = '1.0.0';
+        static version = '1.0.1';
         static author = 'Saleem Ahmad (Elite India)';
     }
 

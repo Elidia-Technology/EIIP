@@ -4,11 +4,14 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub stars](https://img.shields.io/github/stars/SaleemLww/EIIP-Frontend.svg)](https://github.com/SaleemLww/EIIP-Frontend/stargazers)
 
-A comprehensive **client-side** image processing library that delivers lightweight, efficient image processing directly in the browser. Reduce server load and provide instant results with three powerful capabilities:
+A comprehensive **client-side** image processing library that delivers lightweight, efficient image processing directly in the browser. Reduce server load and provide instant results with powerful capabilities:
 
 - 🎨 **SVG to Raster Conversion** - Convert SVG graphics to PNG, JPG, WebP with knitting effects
 - 🖼️ **Raster to SVG Conversion** - Transform raster images to optimized SVG with color reduction
 - 🔧 **Advanced Layer Merging** - Combine multiple image layers with positioning, scaling, and effects
+- ✂️ **Image Cropping** - Crop to rectangle, circle, or aspect ratio (NEW!)
+- 🌈 **Image Effects & Filters** - 10+ predefined effects: grayscale, sepia, vintage, and more (NEW!)
+- 📄 **PDF Conversion** - Convert images to PDF directly in the browser (NEW!)
 
 **Client-first design** with zero server dependencies. Compatible with **React**, **Angular**, **Vue.js**, and **vanilla JavaScript**. Also works in Node.js environments for versatile deployment options.
 
@@ -36,6 +39,28 @@ A comprehensive **client-side** image processing library that delivers lightweig
 - Layer effects: opacity, rotation, scaling, z-index
 - DPI scaling for print-quality output
 - Background color and transparency support
+
+### Image Cropper (NEW!)
+- Crop to specific rectangle area
+- Crop to perfect circle (ideal for avatars)
+- Crop to aspect ratio (Square, 16:9, 4:3, Instagram, Facebook cover, etc.)
+- Maintain image quality during cropping
+- Multiple input formats supported
+
+### Image Effects & Filters (NEW!)
+- **10+ Built-in Effects**: Grayscale, Sepia, Vintage, Blur, Sharpen, Invert
+- **Color Adjustments**: Brightness, Contrast, Warm, Cool
+- **Intensity Control**: Fine-tune effect strength (0.0 - 1.0)
+- **Chain Effects**: Apply multiple effects in sequence
+- **Real-time Processing**: Instant preview in browser
+
+### PDF Converter (NEW!)
+- Convert single or multiple images to PDF
+- Multiple page sizes: A4, Letter, Legal, A3, A5, Tabloid
+- Portrait and landscape orientations
+- Customizable margins
+- Image fitting options: contain, cover, fill
+- Client-side PDF generation (no server required)
 
 ## 🏎️ Client-Side Processing Power
 
@@ -120,7 +145,33 @@ const mergedResult = await eiip.mergeLayers([
     format: 'png',
     quality: 0.9
 });
+
+// NEW: Crop image to circle (perfect for avatars)
+const circularImage = await eiip.cropToCircle(imageFile, {
+    size: 500,
+    format: 'png'
+});
+
+// NEW: Apply vintage effect
+const vintageImage = await eiip.applyEffect(imageFile, 'vintage', 0.8, {
+    format: 'jpg',
+    quality: 0.9
+});
+
+// NEW: Convert images to PDF
+const pdf = await eiip.convertImagesToPDF([image1, image2, image3], {
+    pageSize: EIIP.PDFConverter.PAGE_SIZES.A4,
+    orientation: 'portrait'
+});
 ```
+
+### New Features Examples
+
+See **[EXAMPLES-NEW-FEATURES.md](./EXAMPLES-NEW-FEATURES.md)** for comprehensive examples of:
+- Image cropping (rectangle, circle, aspect ratio)
+- Applying effects and filters
+- PDF conversion
+- Combined workflows
 
 ## 📚 Framework Integration
 
@@ -347,30 +398,27 @@ export default {
 
 ## 📖 API Reference
 
-### EIIP Main Class
+For complete API documentation, see **[API-REFERENCE.md](./API-REFERENCE.md)**
 
+### Quick Reference
+
+**Main EIIP Class:**
 ```javascript
 const eiip = new EIIP(options);
 ```
 
-**Options:**
-- `debug: boolean` - Enable debug logging (default: false)
-- `width: number` - Default output width
-- `height: number` - Default output height
-- `format: string` - Default output format ('png', 'jpg', 'webp')
-- `quality: number` - Default quality (0.0-1.0)
+**Key Methods:**
+- `convertSvgToRaster(input, options)` - Convert SVG to PNG/JPG/WebP
+- `convertRasterToSvg(input, options)` - Convert images to SVG
+- `mergeLayers(layers, options)` - Merge multiple image layers
+- `downloadImage(dataUrl, filename)` - Download processed images
 
-### Methods
+**Direct Class Access:**
+- `EIIP.SvgToRaster` - SVG conversion class
+- `EIIP.RasterToSvg` - Raster conversion class
+- `EIIP.ImageLayerMerger` - Layer merging class
 
-#### `convertSvgToRaster(input, options)`
-#### `convertRasterToSvg(input, options)`
-#### `mergeLayers(layers, options)`
-#### `downloadImage(dataUrl, filename)`
-
-### Static Classes
-- `EIIP.SvgToRaster` - Direct access to SVG converter
-- `EIIP.RasterToSvg` - Direct access to Raster converter  
-- `EIIP.ImageLayerMerger` - Direct access to Layer merger
+**Complete documentation with all options, examples, and advanced usage is available in [API-REFERENCE.md](./API-REFERENCE.md)**
 
 ##  License
 

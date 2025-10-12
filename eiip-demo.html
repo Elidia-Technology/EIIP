@@ -204,8 +204,15 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎨 EIIP Demo</h1>
+            <h1>🎨 EIIP Demo v1.1.0</h1>
             <p>Elite India Image Processing - Complete Frontend Image Processing Library</p>
+            <p style="margin-top: 10px; font-size: 0.95rem;">
+                <span style="background: rgba(255,255,255,0.2); padding: 5px 15px; border-radius: 20px; margin: 0 5px;">SVG ↔ Raster</span>
+                <span style="background: rgba(255,255,255,0.2); padding: 5px 15px; border-radius: 20px; margin: 0 5px;">Layer Merging</span>
+                <span style="background: rgba(255,255,255,0.3); padding: 5px 15px; border-radius: 20px; margin: 0 5px;">✂️ Cropping</span>
+                <span style="background: rgba(255,255,255,0.3); padding: 5px 15px; border-radius: 20px; margin: 0 5px;">🌈 Effects</span>
+                <span style="background: rgba(255,255,255,0.3); padding: 5px 15px; border-radius: 20px; margin: 0 5px;">📄 PDF</span>
+            </p>
         </div>
 
         <!-- SVG to Raster Section -->
@@ -285,6 +292,82 @@
             </div>
             <div id="comprehensiveResult" class="result-area">
                 <p>Demonstrates all EIIP capabilities in a single workflow</p>
+            </div>
+        </div>
+
+        <!-- NEW FEATURES v1.1.0 -->
+        
+        <!-- Image Cropper Demo Section -->
+        <div class="demo-section" style="background: linear-gradient(to right, #f8f9fa, #fff);">
+            <h2>✂️ Image Cropper <span style="background: #667eea; color: white; padding: 4px 12px; border-radius: 20px; font-size: 14px; margin-left: 10px;">NEW!</span></h2>
+            <div class="controls">
+                <input type="file" id="cropFile" accept="image/*" onchange="handleCropFileChange(event)">
+                <select id="cropType">
+                    <option value="circle">Circle (Avatar)</option>
+                    <option value="square">Square (1:1)</option>
+                    <option value="landscape">Landscape (16:9)</option>
+                    <option value="portrait">Portrait (9:16)</option>
+                    <option value="classic">Classic (4:3)</option>
+                    <option value="instagram">Instagram (4:5)</option>
+                    <option value="facebook">Facebook Cover</option>
+                </select>
+                <button onclick="performCrop()">Crop Image</button>
+            </div>
+            <div id="cropResult" class="result-area">
+                <p>Upload an image and select a crop type</p>
+            </div>
+        </div>
+
+        <!-- Image Effects Demo Section -->
+        <div class="demo-section" style="background: linear-gradient(to right, #fff, #f8f9fa);">
+            <h2>🌈 Image Effects & Filters <span style="background: #764ba2; color: white; padding: 4px 12px; border-radius: 20px; font-size: 14px; margin-left: 10px;">NEW!</span></h2>
+            <div class="controls">
+                <input type="file" id="effectFile" accept="image/*" onchange="handleEffectFileChange(event)">
+                <select id="effectType" onchange="applyEffectPreview()">
+                    <option value="grayscale">Grayscale</option>
+                    <option value="sepia">Sepia</option>
+                    <option value="vintage">Vintage</option>
+                    <option value="warm">Warm Tone</option>
+                    <option value="cool">Cool Tone</option>
+                    <option value="brightness">Brightness</option>
+                    <option value="contrast">Contrast</option>
+                    <option value="invert">Invert</option>
+                    <option value="blur">Blur</option>
+                    <option value="sharpen">Sharpen</option>
+                </select>
+                <label style="display: inline-block; margin: 0 10px;">
+                    Intensity: <span id="intensityValue">1.0</span>
+                    <input type="range" id="intensity" min="0" max="100" value="100" 
+                           oninput="updateIntensity()" onchange="applyEffectPreview()"
+                           style="vertical-align: middle; width: 150px; margin-left: 10px;">
+                </label>
+                <button onclick="applyMultipleEffects()">Apply Multi-Effect</button>
+            </div>
+            <div id="effectResult" class="result-area">
+                <p>Upload an image and choose an effect</p>
+            </div>
+        </div>
+
+        <!-- PDF Converter Demo Section -->
+        <div class="demo-section" style="background: linear-gradient(to right, #f8f9fa, #fff);">
+            <h2>📄 PDF Converter <span style="background: #28a745; color: white; padding: 4px 12px; border-radius: 20px; font-size: 14px; margin-left: 10px;">NEW!</span></h2>
+            <div class="controls">
+                <input type="file" id="pdfFiles" accept="image/*" multiple onchange="handlePdfFilesChange(event)">
+                <select id="pageSize">
+                    <option value="A4">A4</option>
+                    <option value="LETTER">Letter</option>
+                    <option value="LEGAL">Legal</option>
+                    <option value="A3">A3</option>
+                    <option value="A5">A5</option>
+                </select>
+                <select id="orientation">
+                    <option value="portrait">Portrait</option>
+                    <option value="landscape">Landscape</option>
+                </select>
+                <button onclick="createPDF()">Create PDF</button>
+            </div>
+            <div id="pdfResult" class="result-area">
+                <p>Upload one or more images to create a PDF</p>
             </div>
         </div>
     </div>
@@ -899,11 +982,201 @@
             }
         }
 
+        // NEW FEATURES v1.1.0 - Image Cropper Functions
+        let currentCropFile = null;
+
+        function handleCropFileChange(event) {
+            currentCropFile = event.target.files[0];
+            if (currentCropFile) {
+                document.getElementById('cropResult').innerHTML = '<p>✓ Image loaded. Select crop type and click "Crop Image"</p>';
+            }
+        }
+
+        async function performCrop() {
+            if (!currentCropFile) {
+                alert('Please select an image first!');
+                return;
+            }
+
+            const cropType = document.getElementById('cropType').value;
+            showProcessing('cropResult', `Cropping image to ${cropType}...`);
+
+            try {
+                let result;
+                
+                if (cropType === 'circle') {
+                    result = await eiip.cropToCircle(currentCropFile, {
+                        size: 500,
+                        format: 'png',
+                        quality: 0.95
+                    });
+                } else {
+                    const aspectRatios = {
+                        square: EIIP.ImageCropper.ASPECT_RATIOS.SQUARE,
+                        landscape: EIIP.ImageCropper.ASPECT_RATIOS.LANDSCAPE,
+                        portrait: EIIP.ImageCropper.ASPECT_RATIOS.PORTRAIT,
+                        classic: EIIP.ImageCropper.ASPECT_RATIOS.CLASSIC,
+                        instagram: EIIP.ImageCropper.ASPECT_RATIOS.INSTAGRAM,
+                        facebook: EIIP.ImageCropper.ASPECT_RATIOS.FACEBOOK_COVER
+                    };
+                    
+                    result = await eiip.cropToAspectRatio(
+                        currentCropFile,
+                        aspectRatios[cropType],
+                        { format: 'png', quality: 0.95 }
+                    );
+                }
+                
+                const downloadBtn = `<button class="download-btn" onclick="eiip.downloadImage('${result.dataUrl}', 'cropped-${cropType}.png')">Download Cropped Image</button>`;
+                
+                showResult('cropResult', `
+                    <img src="${result.dataUrl}" alt="Cropped Image">
+                    ${downloadBtn}
+                `, `✂️ Cropped to ${cropType} • ${result.width}x${result.height} pixels • Perfect for social media and avatars`);
+                
+            } catch (error) {
+                showError('cropResult', error);
+            }
+        }
+
+        // NEW FEATURES v1.1.0 - Image Effects Functions
+        let currentEffectFile = null;
+        let originalEffectImage = null;
+
+        function handleEffectFileChange(event) {
+            currentEffectFile = event.target.files[0];
+            originalEffectImage = null;
+            if (currentEffectFile) {
+                document.getElementById('effectResult').innerHTML = '<p>✓ Image loaded. Select effect and adjust intensity</p>';
+                applyEffectPreview();
+            }
+        }
+
+        function updateIntensity() {
+            const intensity = document.getElementById('intensity').value / 100;
+            document.getElementById('intensityValue').textContent = intensity.toFixed(2);
+        }
+
+        async function applyEffectPreview() {
+            if (!currentEffectFile) return;
+
+            const effectType = document.getElementById('effectType').value;
+            const intensity = document.getElementById('intensity').value / 100;
+            
+            showProcessing('effectResult', `Applying ${effectType} effect...`);
+
+            try {
+                const result = await eiip.applyEffect(
+                    currentEffectFile,
+                    effectType,
+                    intensity,
+                    { format: 'jpg', quality: 0.92 }
+                );
+                
+                originalEffectImage = result.canvas;
+                
+                const downloadBtn = `<button class="download-btn" onclick="eiip.downloadImage('${result.dataUrl}', '${effectType}-effect.jpg')">Download ${effectType}</button>`;
+                
+                showResult('effectResult', `
+                    <img src="${result.dataUrl}" alt="Effect Applied">
+                    ${downloadBtn}
+                `, `🌈 ${effectType.toUpperCase()} effect applied • Intensity: ${intensity.toFixed(2)} • ${result.width}x${result.height} pixels`);
+                
+            } catch (error) {
+                showError('effectResult', error);
+            }
+        }
+
+        async function applyMultipleEffects() {
+            if (!currentEffectFile) {
+                alert('Please select an image first!');
+                return;
+            }
+
+            showProcessing('effectResult', 'Applying multiple effects (Vintage + Warm + Contrast)...');
+
+            try {
+                const result = await eiip.applyEffects(currentEffectFile, [
+                    { name: 'sepia', intensity: 0.6 },
+                    { name: 'warm', intensity: 0.4 },
+                    { name: 'contrast', intensity: 1.15 },
+                    { name: 'vintage', intensity: 0.5 }
+                ], {
+                    format: 'jpg',
+                    quality: 0.95
+                });
+                
+                const downloadBtn = `<button class="download-btn" onclick="eiip.downloadImage('${result.dataUrl}', 'multi-effect.jpg')">Download Multi-Effect</button>`;
+                
+                showResult('effectResult', `
+                    <img src="${result.dataUrl}" alt="Multi-Effect Applied">
+                    ${downloadBtn}
+                `, `🎨 Multiple effects applied: ${result.effects.join(' + ')} • ${result.width}x${result.height} pixels • Professional vintage look`);
+                
+            } catch (error) {
+                showError('effectResult', error);
+            }
+        }
+
+        // NEW FEATURES v1.1.0 - PDF Converter Functions
+        let currentPdfFiles = [];
+
+        function handlePdfFilesChange(event) {
+            currentPdfFiles = Array.from(event.target.files);
+            if (currentPdfFiles.length > 0) {
+                document.getElementById('pdfResult').innerHTML = `<p>✓ ${currentPdfFiles.length} image(s) loaded. Select page size and click "Create PDF"</p>`;
+            }
+        }
+
+        async function createPDF() {
+            if (currentPdfFiles.length === 0) {
+                alert('Please select at least one image!');
+                return;
+            }
+
+            const pageSize = document.getElementById('pageSize').value;
+            const orientation = document.getElementById('orientation').value;
+            
+            showProcessing('pdfResult', `Creating ${currentPdfFiles.length}-page PDF document...`);
+
+            try {
+                const result = await eiip.convertImagesToPDF(currentPdfFiles, {
+                    pageSize: EIIP.PDFConverter.PAGE_SIZES[pageSize],
+                    orientation: orientation,
+                    margin: 30
+                });
+                
+                // Show preview of first page
+                const previewHtml = result.dataUrls.slice(0, 3).map((url, index) => 
+                    `<div style="display: inline-block; margin: 10px;">
+                        <img src="${url}" alt="Page ${index + 1}" style="max-width: 200px; border: 2px solid #ddd; border-radius: 5px;">
+                        <p style="text-align: center; margin-top: 5px; font-size: 12px;">Page ${index + 1}</p>
+                    </div>`
+                ).join('');
+                
+                const morePages = result.pageCount > 3 ? `<p style="margin-top: 10px;">... and ${result.pageCount - 3} more page(s)</p>` : '';
+                
+                const downloadBtn = `<button class="download-btn" onclick="window.open('${result.downloadUrl}', '_blank')">📥 Download PDF Document</button>`;
+                
+                showResult('pdfResult', `
+                    <div style="text-align: center;">
+                        ${previewHtml}
+                        ${morePages}
+                    </div>
+                    ${downloadBtn}
+                `, `📄 PDF created • ${result.pageCount} page(s) • ${pageSize} size • ${orientation} orientation • Ready to download`);
+                
+            } catch (error) {
+                showError('pdfResult', error);
+            }
+        }
+
         // Initialize demo on page load
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🎨 EIIP Demo loaded successfully!');
             console.log('📚 Library version:', EIIP.version);
             console.log('👨‍💻 Author:', EIIP.author);
+            console.log('✨ New Features: Image Cropper, Image Effects, PDF Converter');
         });
     </script>
 </body>
