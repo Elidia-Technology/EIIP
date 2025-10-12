@@ -1,6 +1,11 @@
 # Development and internal documentation files
 NPM-PUBLISHING-GUIDE.md
 KNITTING-CSS-EMBEDDED-SUMMARY.md
+RELEASE-NOTES-*.md
+V1.*.md
+QUICK-REFERENCE.md
+EXAMPLES-NEW-FEATURES.md
+new-features-demo.html
 
 # Development directories
 .vscode/
