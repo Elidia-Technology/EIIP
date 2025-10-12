@@ -1,6 +1,6 @@
 {
   "name": "eiip",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "EIIP (Elite India Image Processing) - Complete frontend image processing library with SVG to raster conversion, raster to SVG conversion, and advanced image layer merging capabilities. Compatible with React, Angular, Vue.js, and vanilla JavaScript.",
   "main": "eiip.js",
   "browser": "eiip.min.js",
