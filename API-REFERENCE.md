@@ -1,9 +1,9 @@
 # EIIP API Reference
 
-Complete API documentation for EIIP (Elite India Image Processing) library.
+Complete API documentation for EIIP (Elidia Technology Pvt Ltd Image Processing) library.
 
 **Version:** 1.2.0  
-**Author:** Saleem Ahmad (Elite India)  
+**Author:** Saleem Ahmad (Elidia Technology Pvt Ltd)  
 **License:** MIT
 
 ---
@@ -1478,9 +1478,9 @@ const cool = await adjuster.adjustColors(file, {
 
 ## License
 
-MIT License - Copyright (c) 2025 Saleem Ahmad (Elite India)
+MIT License - Copyright (c) 2025 Saleem Ahmad (Elidia Technology Pvt Ltd)
 
 ---
 
-**EIIP** - Elite India Image Processing Library  
+**EIIP** - Elidia Technology Pvt Ltd Image Processing Library  
 Making client-side image processing simple and powerful! 🎨✨

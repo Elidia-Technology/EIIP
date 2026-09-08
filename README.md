@@ -1,4 +1,4 @@
-# EIIP - Elite India Image Processing
+# EIIP - Elidia Technology Pvt Ltd Image Processing
 
 [![npm version](https://badge.fury.io/js/eiip.svg)](https://badge.fury.io/js/eiip)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -123,7 +123,7 @@ A comprehensive **client-side** image processing library that delivers lightweig
 - **Cross-Platform** - Works on desktop, mobile, and tablets
 
 ### 🔧 Server-Side Alternative
-While EIIP excels at client-side processing, for advanced server-side image processing with more sophisticated features, consider **[EIGC (Elite India Graphics Core)](https://github.com/SaleemLww/EIGC)** - our comprehensive server-side image processing library with enterprise-grade capabilities.
+While EIIP excels at client-side processing, for advanced server-side image processing with more sophisticated features, consider **[EIGC (Elidia Technology Pvt Ltd Graphics Core)](https://github.com/SaleemLww/EIGC)** - our comprehensive server-side image processing library with enterprise-grade capabilities.
 
 ## 📦 Installation
 
@@ -464,14 +464,14 @@ const eiip = new EIIP(options);
 
 ##  License
 
-MIT License - Copyright (c) 2025 Saleem Ahmad (Elite India)
+MIT License - Copyright (c) 2025 Saleem Ahmad (Elidia Technology Pvt Ltd)
 
 ## 👨‍💻 Author
 
-**Saleem Ahmad (Elite India)**
+**Saleem Ahmad (Elidia Technology Pvt Ltd)**
 - GitHub: [@SaleemLww](https://github.com/SaleemLww)
 - Repository: [EIIP-Frontend](https://github.com/SaleemLww/EIIP-Frontend)
 
 ---
 
-**EIIP** - Elite India Image Processing Library - Making frontend image processing simple and powerful! 🎨✨
+**EIIP** - Elidia Technology Pvt Ltd Image Processing Library - Making frontend image processing simple and powerful! 🎨✨

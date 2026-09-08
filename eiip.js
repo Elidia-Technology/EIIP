@@ -1,8 +1,8 @@
 /**
- * EIIP (Elite India Image Processing) - Complete Frontend Image Processing Library
+ * EIIP (Elidia Technology Pvt Ltd Image Processing) - Complete Frontend Image Processing Library
  * 
  * MIT License
- * Copyright (c) 2025 Saleem Ahmad (Elite India)
+ * Copyright (c) 2025 Saleem Ahmad (Elidia Technology Pvt Ltd)
  * 
  * A comprehensive JavaScript library for frontend image processing including:
  * - SVG to Raster conversion with knitting effects
@@ -13,7 +13,7 @@
  * Works in both browser and Node.js environments
  * 
  * @version 1.0.0
- * @author Saleem Ahmad (Elite India)
+ * @author Saleem Ahmad (Elidia Technology Pvt Ltd)
  * @license MIT
  */
 
@@ -2921,7 +2921,7 @@
     }
 
     /**
-     * Main EIIP Class - Elite India Image Processing
+     * Main EIIP Class - Elidia Technology Pvt Ltd Image Processing
      * Combines all image processing capabilities
      */
     class EIIP {
@@ -2945,7 +2945,7 @@
             SvgToRaster.injectKnittingCSS();
             
             if (this.debug) {
-                console.log('✅ EIIP (Elite India Image Processing) initialized');
+                console.log('✅ EIIP (Elidia Technology Pvt Ltd Image Processing) initialized');
                 console.log('🧶 Knitting effects CSS automatically loaded');
                 console.log('✂️  Image Cropper ready');
                 console.log('🎨 Image Effects ready');
@@ -3120,7 +3120,7 @@
 
         // Version info
         static version = '1.2.0';
-        static author = 'Saleem Ahmad (Elite India)';
+        static author = 'Saleem Ahmad (Elidia Technology Pvt Ltd)';
     }
 
     // Return the main EIIP class with all sub-classes attached
