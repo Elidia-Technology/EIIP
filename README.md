@@ -2,7 +2,7 @@
 
 [![npm version](https://badge.fury.io/js/eiip.svg)](https://badge.fury.io/js/eiip)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub stars](https://img.shields.io/github/stars/SaleemLww/EIIP-Frontend.svg)](https://github.com/SaleemLww/EIIP-Frontend/stargazers)
+[![GitHub stars](https://img.shields.io/github/stars/Elidia-Technology/EIIP.svg)](https://github.com/Elidia-Technology/EIIP/stargazers)
 
 A comprehensive **client-side** image processing library that delivers lightweight, efficient image processing directly in the browser. Reduce server load and provide instant results with powerful capabilities:
 
@@ -123,7 +123,7 @@ A comprehensive **client-side** image processing library that delivers lightweig
 - **Cross-Platform** - Works on desktop, mobile, and tablets
 
 ### 🔧 Server-Side Alternative
-While EIIP excels at client-side processing, for advanced server-side image processing with more sophisticated features, consider **[EIGC (Elidia Technology Pvt Ltd Graphics Core)](https://github.com/SaleemLww/EIGC)** - our comprehensive server-side image processing library with enterprise-grade capabilities.
+While EIIP excels at client-side processing, for advanced server-side image processing with more sophisticated features, consider **[EIGC (Elidia Technology Pvt Ltd Graphics Core)](https://github.com/Elidia-Technology/EIGC)** - our comprehensive server-side image processing library with enterprise-grade capabilities.
 
 ## 📦 Installation
 
@@ -469,8 +469,8 @@ MIT License - Copyright (c) 2025 Saleem Ahmad (Elidia Technology Pvt Ltd)
 ## 👨‍💻 Author
 
 **Saleem Ahmad (Elidia Technology Pvt Ltd)**
-- GitHub: [@SaleemLww](https://github.com/SaleemLww)
-- Repository: [EIIP-Frontend](https://github.com/SaleemLww/EIIP-Frontend)
+- GitHub: [@aiutils-io](https://github.com/aiutils-io)
+- Repository: [EIIP-Frontend](https://github.com/Elidia-Technology/EIIP)
 
 ---
 

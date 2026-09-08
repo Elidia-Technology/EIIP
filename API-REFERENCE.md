@@ -1470,9 +1470,9 @@ const cool = await adjuster.adjustColors(file, {
 
 ## Support
 
-- **GitHub Issues:** [EIIP-Frontend Issues](https://github.com/SaleemLww/EIIP-Frontend/issues)
+- **GitHub Issues:** [EIIP-Frontend Issues](https://github.com/Elidia-Technology/EIIP/issues)
 - **NPM Package:** [npmjs.com/package/eiip](https://www.npmjs.com/package/eiip)
-- **Repository:** [github.com/SaleemLww/EIIP-Frontend](https://github.com/SaleemLww/EIIP-Frontend)
+- **Repository:** [github.com/Elidia-Technology/EIIP](https://github.com/Elidia-Technology/EIIP)
 
 ---
 
